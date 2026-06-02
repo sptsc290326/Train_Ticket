@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frontend test - TrainTick</title>
+    <link rel="stylesheet" href="assets/css/frontend-test.css">
+</head>
+<body>
+    <header class="topbar">
+        <div>
+            <h1>TrainTick - Frontend test riêng</h1>
+            <p>File HTML/CSS/JS riêng, gọi backend Servlet đang chạy trên Tomcat.</p>
+        </div>
+    </header>
+
+    <main class="layout">
+        <section class="card full">
+            <h2>Cấu hình backend</h2>
+            <label>Base URL backend</label>
+            <input id="baseUrl" type="text" value="http://localhost:8080/Nhom14">
+            <p class="hint">Khi dán file này vào thư mục <b>webapp</b>, base URL sẽ tự trùng với project trên Tomcat.</p>
+        </section>
+
+        <section class="card">
+            <h2>1. Giữ ghế</h2>
+            <form id="holdSeatForm" method="post" target="backendFrame">
+                <label>Mã ghế chuyến</label>
+                <input id="holdSeatId" name="idGheChuyen" type="text" value="GC001">
+                <button type="submit">Giữ ghế bằng form POST</button>
+            </form>
+            <button id="holdSeatFetchBtn" class="secondary">Giữ ghế bằng fetch JSON</button>
+            <pre id="holdSeatResult">Chưa gửi yêu cầu.</pre>
+        </section>
+
+        <section class="card">
+            <h2>2. Tạo vé</h2>
+            <form id="bookingForm" method="post" target="backendFrame">
+                <label>Mã người đặt</label>
+                <input id="userId" name="userId" type="text" value="U02">
+
+                <label>Danh sách ghế, cách nhau bằng dấu phẩy</label>
+                <input id="seatIds" type="text" value="GC001">
+
+                <button type="button" id="buildPassengerBtn">Tạo ô nhập hành khách</button>
+
+                <div id="passengerContainer" class="passenger-container"></div>
+
+                <button type="submit">Gửi tạo vé</button>
+            </form>
+        </section>
+
+        <section class="card">
+            <h2>3. Xem danh sách vé</h2>
+            <label>User ID</label>
+            <input id="listUserId" type="text" value="U02">
+            <button id="loadTicketListBtn">Load danh sách vé</button>
+            <button id="openTicketListBtn" class="secondary">Mở tab mới</button>
+        </section>
+
+        <section class="card">
+            <h2>4. Xem chi tiết vé</h2>
+            <label>Mã vé</label>
+            <input id="ticketId" type="text" value="VE01">
+            <button id="loadTicketDetailBtn">Load chi tiết vé</button>
+            <button id="openTicketDetailBtn" class="secondary">Mở tab mới</button>
+        </section>
+
+        <section class="card full">
+            <h2>Kết quả từ backend</h2>
+            <iframe id="backendFrame" name="backendFrame" title="Backend result"></iframe>
+        </section>
+    </main>
+
+    <script src="assets/js/frontend-test.js"></script>
+</body>
+</html>
