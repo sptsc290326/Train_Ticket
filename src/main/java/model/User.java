@@ -76,7 +76,5 @@ public class User {
 	public void setVaiTro(String vaiTro) {
 		this.vaiTro = vaiTro;
 	}
-    
-
-	
+   
 }
