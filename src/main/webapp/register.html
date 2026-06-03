@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Đăng ký - G7 TrainTick</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="css/style2.css">
+
+</head>
+<body class="theme-v2 login-page-v2">
+
+<!-- NAVBAR -->
+<nav class="login-nav">
+  <div class="nav-inner">
+    <a href="home.html" class="brand">
+      <i class="fa-solid fa-train"></i> G7 TrainTick
+    </a>
+    <div class="nav-right">
+      <span class="phone-num"><i class="fa-solid fa-phone"></i> 1900-xxxx</span>
+      <a href="login.html" style="color:var(--yellow);font-weight:600;font-size:.88rem;text-decoration:none;display:flex;align-items:center;gap:6px;">
+        <i class="fa-solid fa-right-to-bracket"></i> Đăng nhập
+      </a>
+    </div>
+  </div>
+</nav>
+
+<!-- BODY -->
+<div class="login-body">
+
+  <div class="login-hero-text">
+    <i class="fa-solid fa-train logo-icon"></i>
+    <h2>G7 TrainTick</h2>
+    <p>Tạo tài khoản để trải nghiệm dịch vụ đặt vé tàu</p>
+  </div>
+
+  <div class="register-card">
+    <h3><i class="fa-solid fa-user-plus" style="color:var(--blue-main);font-size:1.1rem;margin-right:8px"></i>Tạo tài khoản mới</h3>
+
+
+
+    <div class="divider"> Đăng ký bằng email</div>
+
+    <!-- Họ tên -->
+    <div class="form-group-v2">
+      <label>Họ và tên <span style="color:#dc2626">*</span></label>
+      <div class="input-wrap">
+        <i class="fa-solid fa-user icon-left"></i>
+        <input type="text" id="regName" placeholder="Nguyễn Văn A"
+               oninput="validateName(false)" onblur="validateName(true)">
+      </div>
+      <div class="field-error" id="nameError" style="display:none">
+        <i class="fa-solid fa-circle-exclamation"></i> <span></span>
+      </div>
+    </div>
+
+    <!-- Email -->
+    <div class="form-group-v2">
+      <label>Email <span style="color:#dc2626">*</span></label>
+      <div class="input-wrap">
+        <i class="fa-regular fa-envelope icon-left"></i>
+        <input type="email" id="regEmail" placeholder="email@gmail.com"
+               oninput="validateEmail(false)" onblur="validateEmail(true)">
+      </div>
+      <div class="field-error" id="emailError" style="display:none">
+        <i class="fa-solid fa-circle-exclamation"></i> <span></span>
+      </div>
+      <div class="field-success" id="emailOk" style="display:none">
+        <i class="fa-solid fa-circle-check"></i> <span>Email hợp lệ</span>
+      </div>
+    </div>
+
+    <!-- SĐT -->
+    <div class="form-group-v2">
+      <label>Số điện thoại <span style="color:#dc2626">*</span></label>
+      <div class="input-wrap">
+        <i class="fa-solid fa-phone icon-left"></i>
+        <input type="tel" id="regPhone" placeholder="0901234567"
+               oninput="validatePhone(false)" onblur="validatePhone(true)">
+      </div>
+      <div class="field-error" id="phoneError" style="display:none">
+        <i class="fa-solid fa-circle-exclamation"></i> <span></span>
+      </div>
+      <div class="field-success" id="phoneOk" style="display:none">
+        <i class="fa-solid fa-circle-check"></i> <span>Số điện thoại hợp lệ</span>
+      </div>
+    </div>
+
+    <!-- Mật khẩu -->
+    <div class="form-group-v2">
+      <label>Mật khẩu <span style="color:#dc2626">*</span></label>
+      <div class="input-wrap">
+        <i class="fa-solid fa-lock icon-left"></i>
+        <input type="password" id="regPassword" placeholder="••••••••"
+               oninput="validatePassword(false)" onblur="validatePassword(true)">
+        <i class="fa-regular fa-eye icon-right" onclick="togglePwdV2('regPassword', this)"></i>
+      </div>
+      <div class="field-error" id="passwordError" style="display:none">
+        <i class="fa-solid fa-circle-exclamation"></i> <span></span>
+      </div>
+      <!-- Strength bar -->
+      <div class="password-strength" id="strengthBox" style="display:none">
+        <div class="strength-bar"><div class="strength-fill" id="strengthFill"></div></div>
+        <span class="strength-text" id="strengthText"></span>
+      </div>
+      <!-- Rules checklist -->
+      <ul class="pwd-rules">
+        <li id="rule-len"><i class="fa-solid fa-circle"></i> Hơn 6 ký tự</li>
+        <li id="rule-upper"><i class="fa-solid fa-circle"></i> Ít nhất 1 chữ hoa (A–Z)</li>
+        <li id="rule-num"><i class="fa-solid fa-circle"></i> Ít nhất 1 chữ số (0–9)</li>
+      </ul>
+    </div>
+
+    <!-- Nhập lại mật khẩu -->
+    <div class="form-group-v2">
+      <label>Nhập lại mật khẩu <span style="color:#dc2626">*</span></label>
+      <div class="input-wrap">
+        <i class="fa-solid fa-lock icon-left"></i>
+        <input type="password" id="regPasswordConfirm" placeholder="••••••••"
+               oninput="validateConfirm(false)" onblur="validateConfirm(true)">
+        <i class="fa-regular fa-eye icon-right" onclick="togglePwdV2('regPasswordConfirm', this)"></i>
+      </div>
+      <div class="field-error" id="confirmError" style="display:none">
+        <i class="fa-solid fa-circle-exclamation"></i> <span></span>
+      </div>
+      <div class="field-success" id="confirmOk" style="display:none">
+        <i class="fa-solid fa-circle-check"></i> <span>Mật khẩu khớp</span>
+      </div>
+    </div>
+
+    <!-- Terms -->
+    <div class="terms-check">
+      <input type="checkbox" id="agreeTerms">
+      <label for="agreeTerms">
+        Tôi đồng ý với <a href="#">Điều khoản sử dụng</a> và
+        <a href="#">Chính sách bảo mật</a> của G7 TrainTick
+      </label>
+    </div>
+    <div class="field-error terms-err" id="termsError" style="display:none">
+      <i class="fa-solid fa-circle-exclamation"></i>
+      <span>Vui lòng đồng ý với điều khoản để tiếp tục</span>
+    </div>
+
+    <button class="btn-register" id="regBtn" onclick="register()">
+      <i class="fa-solid fa-user-plus"></i> Đăng ký
+    </button>
+
+    <div class="login-link">
+      Đã có tài khoản? <a href="login.html">Đăng nhập ngay</a>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="login-footer">
+  <div class="footer-inner">
+    <div class="row g-4">
+      <div class="col-lg-3 col-md-6">
+        <h5><i class="fa-solid fa-train"></i> G7 TrainTick</h5>
+        <p>Hệ thống đặt vé tàu trực tuyến nhanh chóng, an toàn và tiện lợi.</p>
+      </div>
+      <div class="col-lg-3 col-md-6">
+        <h5>Về TrainTick</h5>
+        <ul><li>Giới thiệu</li><li>Điều khoản sử dụng</li><li>Chính sách bảo mật</li><li>Quy chế hoạt động</li></ul>
+      </div>
+      <div class="col-lg-3 col-md-6">
+        <h5>Hỗ trợ</h5>
+        <ul><li>Hướng dẫn đặt vé</li><li>Chính sách hoàn vé</li><li>Câu hỏi thường gặp</li><li>Liên hệ</li></ul>
+      </div>
+      <div class="col-lg-3 col-md-6">
+        <h5>Liên hệ</h5>
+        <ul><li>☎ Hotline: 1900-xxxx</li><li>✉ support@g7traintick.vn</li><li>📍 Hà Nội, Việt Nam</li></ul>
+      </div>
+    </div>
+    <hr>
+    <p class="copy">© 2026 G7 TrainTick. Tất cả quyền được bảo lưu.</p>
+  </div>
+</footer>
+
+<script src="js/function.js"></script>
+<script src="js/auth.js"></script>
+
+    <script src="js/api-front.js"></script>
+  </body>
+</html>

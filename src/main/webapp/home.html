@@ -1,0 +1,407 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>G7 TrainTick - Đặt vé tàu nhanh chóng, an toàn</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/style2.css" />
+  </head>
+  <body class="theme-v2">
+    <!-- NAVBAR -->
+    <nav class="navbar navbar-expand-lg navbar-dark custom-navbar">
+      <div class="container">
+        <a class="navbar-brand fw-bold" href="home.html">
+          <i class="fa-solid fa-train"></i>
+          TrainTick
+        </a>
+        <button
+          class="navbar-toggler"
+          data-bs-toggle="collapse"
+          data-bs-target="#menu"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="menu">
+          <ul class="navbar-nav mx-auto">
+            <li class="nav-item">
+              <a class="nav-link active" href="home.html">Trang chủ</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="routes.html">Tìm chuyến</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="view_tickets.html">Vé của tôi</a>
+            </li>
+          </ul>
+          <div class="d-flex align-items-center gap-3">
+            <span class="phone">
+              <i class="fa-solid fa-phone"></i>
+              1900-xxxx
+            </span>
+            <button
+              class="account-btn"
+              onclick="window.location.href = 'profile.html'"
+            >
+              <i class="fa-regular fa-user"></i>
+              Tài khoản
+            </button>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- HERO -->
+    <section class="hero">
+      <div class="container">
+        <div class="row align-items-center">
+          <div class="col-lg-5 mb-4 mb-lg-0">
+            <h1>Đặt vé tàu nhanh chóng, an toàn</h1>
+            <p class="sub">
+              Tra cứu lịch trình, chọn chỗ ngồi, thanh toán online và nhận vé QR
+              ngay lập tức
+            </p>
+          </div>
+          <div class="col-lg-7">
+            <div class="search-box">
+              <!-- Tabs -->
+              <div class="tab-group">
+                <button
+                  class="tab-btn active"
+                  data-tab="one"
+                  onclick="switchTab('one')"
+                >
+                  Tàu hỏa
+                </button>
+                <button
+                  class="tab-btn"
+                  data-tab="round"
+                  onclick="switchTab('round')"
+                >
+                  Khứ hồi
+                </button>
+              </div>
+
+              <!-- Fields -->
+              <div class="search-grid">
+                <div class="search-field">
+                  <label>Ga đi</label>
+                  <div class="field-inner">
+                    <i class="fa-solid fa-location-dot"></i>
+                    <input
+                      type="text"
+                      id="fromStation"
+                      placeholder="Sài Gòn"
+                      list="stationList"
+                    />
+                  </div>
+                </div>
+                <div class="search-field">
+                  <label>Ga đến</label>
+                  <div class="field-inner">
+                    <i
+                      class="fa-solid fa-location-dot"
+                      style="color: #f4b71a"
+                    ></i>
+                    <input
+                      type="text"
+                      id="toStation"
+                      placeholder="Hà Nội"
+                      list="stationList"
+                    />
+                  </div>
+                </div>
+                <div class="search-field">
+                  <label>Ngày khởi hành</label>
+                  <div class="field-inner">
+                    <i class="fa-regular fa-calendar"></i>
+                    <input type="date" id="departDate" />
+                  </div>
+                </div>
+                <div class="search-field">
+                  <label>Số hành khách</label>
+                  <div class="field-inner">
+                    <i class="fa-regular fa-user"></i>
+                    <input
+                      type="number"
+                      id="numPersons"
+                      min="1"
+                      max="10"
+                      value="2"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <!-- Return date (hidden by default) -->
+              <div
+                id="returnDateRow"
+                style="display: none; margin-bottom: 16px"
+              >
+                <div class="search-field">
+                  <label>Ngày về</label>
+                  <div class="field-inner">
+                    <i class="fa-regular fa-calendar"></i>
+                    <input type="date" id="returnDate" />
+                  </div>
+                </div>
+              </div>
+
+              <!-- Trip type row -->
+              <div class="d-flex gap-3 mb-4" style="font-size: 0.88rem">
+                <label
+                  style="
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    gap: 6px;
+                  "
+                >
+                  <input
+                    type="radio"
+                    name="tripType"
+                    value="one"
+                    checked
+                    onchange="switchTab('one')"
+                  />
+                  Một chiều
+                </label>
+                <label
+                  style="
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    gap: 6px;
+                  "
+                >
+                  <input
+                    type="radio"
+                    name="tripType"
+                    value="round"
+                    onchange="switchTab('round')"
+                  />
+                  Khứ hồi
+                </label>
+              </div>
+
+              <button type="button" id="searchTrainBtn" class="btn-search">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                Tìm kiếm chuyến tàu
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <datalist id="stationList">
+      <option value="Sài Gòn"></option>
+      <option value="Hà Nội"></option>
+      <option value="Đà Nẵng"></option>
+      <option value="Nha Trang"></option>
+      <option value="Huế"></option>
+      <option value="Hải Phòng"></option>
+      <option value="Vinh"></option>
+      <option value="Đà Lạt"></option>
+      <option value="Hòa Bình"></option>
+      <option value="Phan Thiết"></option>
+    </datalist>
+
+    <!-- FEATURES -->
+    <section class="features-section">
+      <div class="container">
+        <div class="row g-4">
+          <div class="col-lg-3 col-sm-6">
+            <div class="feature-card">
+              <div class="feature-icon">
+                <i class="fa-solid fa-shield-halved"></i>
+              </div>
+              <h6>Chắc chắn có chỗ</h6>
+              <p>Đảm bảo ghế ngồi đặt vé online</p>
+            </div>
+          </div>
+          <div class="col-lg-3 col-sm-6">
+            <div class="feature-card">
+              <div class="feature-icon">
+                <i class="fa-solid fa-credit-card"></i>
+              </div>
+              <h6>Thanh toán an toàn</h6>
+              <p>Hỗ trợ nhiều phương thức thanh toán</p>
+            </div>
+          </div>
+          <div class="col-lg-3 col-sm-6">
+            <div class="feature-card">
+              <div class="feature-icon">
+                <i class="fa-solid fa-qrcode"></i>
+              </div>
+              <h6>Vé điện tử QR</h6>
+              <p>Nhận vé ngay qua email và SMS</p>
+            </div>
+          </div>
+          <div class="col-lg-3 col-sm-6">
+            <div class="feature-card">
+              <div class="feature-icon">
+                <i class="fa-solid fa-headset"></i>
+              </div>
+              <h6>Hỗ trợ 24/7</h6>
+              <p>Đội ngũ tư vấn luôn sẵn sàng</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- POPULAR ROUTES -->
+    <section class="routes-section">
+      <div class="container">
+        <h2 class="section-title">Tuyến tàu phổ biến</h2>
+        <div class="row g-3">
+          <div class="col-lg-3 col-sm-6">
+            <div class="route-card">
+              <div class="route-stations">Sài Gòn → Hà Nội</div>
+              <div class="route-meta">
+                <i class="fa-regular fa-clock"></i> 31h
+              </div>
+              <div class="route-price">Từ 1.200.000đ</div>
+              <button
+                class="btn-route"
+                onclick="viewRoute('Sài Gòn', 'Hà Nội')"
+              >
+                Xem chuyến
+              </button>
+            </div>
+          </div>
+          <div class="col-lg-3 col-sm-6">
+            <div class="route-card">
+              <div class="route-stations">Hà Nội → Đà Nẵng</div>
+              <div class="route-meta">
+                <i class="fa-regular fa-clock"></i> 15h
+              </div>
+              <div class="route-price">Từ 600.000đ</div>
+              <button
+                class="btn-route"
+                onclick="viewRoute('Hà Nội', 'Đà Nẵng')"
+              >
+                Xem chuyến
+              </button>
+            </div>
+          </div>
+          <div class="col-lg-3 col-sm-6">
+            <div class="route-card">
+              <div class="route-stations">Sài Gòn → Nha Trang</div>
+              <div class="route-meta">
+                <i class="fa-regular fa-clock"></i> 8h
+              </div>
+              <div class="route-price">Từ 450.000đ</div>
+              <button
+                class="btn-route"
+                onclick="viewRoute('Sài Gòn', 'Nha Trang')"
+              >
+                Xem chuyến
+              </button>
+            </div>
+          </div>
+          <div class="col-lg-3 col-sm-6">
+            <div class="route-card">
+              <div class="route-stations">Hà Nội → Hải Phòng</div>
+              <div class="route-meta">
+                <i class="fa-regular fa-clock"></i> 2h
+              </div>
+              <div class="route-price">Từ 150.000đ</div>
+              <button
+                class="btn-route"
+                onclick="viewRoute('Hà Nội', 'Hải Phòng')"
+              >
+                Xem chuyến
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PROCESS -->
+    <section class="process-section">
+      <div class="container">
+        <h2 class="section-title">Quy trình đặt vé đơn giản</h2>
+        <div class="row g-4 justify-content-center">
+          <div class="col-lg-4 col-sm-4">
+            <div class="step-card">
+              <div class="step-number">01</div>
+              <h6>Tìm chuyến tàu</h6>
+              <p>Chọn ga đi, ga đến và ngày khởi hành</p>
+            </div>
+          </div>
+          <div class="col-lg-4 col-sm-4">
+            <div class="step-card">
+              <div class="step-number">02</div>
+              <h6>Chọn ghế ngồi</h6>
+              <p>Xem sơ đồ toa tàu và chọn vị trí thích</p>
+            </div>
+          </div>
+          <div class="col-lg-4 col-sm-4">
+            <div class="step-card">
+              <div class="step-number">03</div>
+              <h6>Thanh toán &amp; nhận vé</h6>
+              <p>Thanh toán online và nhận vé QR ngay</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+      <div class="container">
+        <div class="row g-4">
+          <div class="col-lg-3 col-md-6 footer-col">
+            <h5><i class="fa-solid fa-train"></i> G7 TrainTick</h5>
+            <p>
+              Hệ thống đặt vé tàu trực tuyến nhanh chóng, an toàn và tiện lợi.
+            </p>
+          </div>
+          <div class="col-lg-3 col-md-6 footer-col">
+            <h5>Về TrainTick</h5>
+            <ul>
+              <li>Giới thiệu</li>
+              <li>Điều khoản sử dụng</li>
+              <li>Chính sách bảo mật</li>
+              <li>Quy chế hoạt động</li>
+            </ul>
+          </div>
+          <div class="col-lg-3 col-md-6 footer-col">
+            <h5>Hỗ trợ</h5>
+            <ul>
+              <li>Hướng dẫn đặt vé</li>
+              <li>Chính sách hoàn vé</li>
+              <li>Câu hỏi thường gặp</li>
+              <li>Liên hệ</li>
+            </ul>
+          </div>
+          <div class="col-lg-3 col-md-6 footer-col">
+            <h5>Liên hệ</h5>
+            <ul>
+              <li>☎ Hotline: 1900-xxxx</li>
+              <li>✉ support@g7traintick.vn</li>
+              <li>📍 Quận 8, Việt Nam</li>
+            </ul>
+          </div>
+        </div>
+        <hr />
+        <p class="copyright">© 2026 G7 TrainTick. Tất cả quyền được bảo lưu.</p>
+      </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script src="./js/home.js"></script>
+      <script src="js/api-front.js"></script>
+  </body>
+</html>

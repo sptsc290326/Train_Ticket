@@ -1,0 +1,401 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TrainTick - Chọn chỗ ngồi</title>
+    <!-- Bootstrap 5 & FontAwesome -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+      rel="stylesheet"
+    />
+    <!-- Link file CSS hệ thống của nhóm -->
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/style3.css" />
+  </head>
+  <body style="background-color: #f4f7fc">
+    <!-- NAVBAR -->
+    <nav
+      class="navbar navbar-expand-lg navbar-dark custom-navbar"
+      style="background-color: #2045c4"
+    >
+      <div class="container">
+        <a class="navbar-brand fw-bold" href="home.html">
+          <i class="fa-solid fa-train"></i> TrainTick
+        </a>
+        <button
+          class="navbar-toggler"
+          data-bs-toggle="collapse"
+          data-bs-target="#menu"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="menu">
+          <ul class="navbar-nav mx-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="home.html">Trang chủ</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link active" href="routes.html">Tìm chuyến</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="view_tickets.html">Vé của tôi</a>
+            </li>
+          </ul>
+          <div class="d-flex align-items-center gap-3">
+            <span class="phone text-white"
+              ><i class="fa-solid fa-phone"></i> 1900-xxxx</span
+            >
+            <button
+              class="account-btn btn btn-warning fw-bold text-dark"
+              style="background-color: #f4b71a; border: none"
+            >
+              <i class="fa-regular fa-user"></i> Tài khoản
+            </button>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container my-5">
+      <div class="row">
+        <!-- BÊN TRÁI: KHU VỰC CHỌN CHỖ NGỒI (DỌC THEO THÂN TÀU) -->
+        <div class="col-lg-8 mb-4">
+          <div class="p-4 bg-white border rounded-3 shadow-sm">
+            <h5 class="fw-bold mb-4 text-dark">Chọn chỗ ngồi</h5>
+
+            <!-- Thông tin chuyến tàu đầu sơ đồ -->
+            <div
+              class="d-flex align-items-center gap-3 p-3 rounded-3 mb-4"
+              style="background-color: #f8fafc; border: 1px solid #e2e8f0"
+            >
+              <i class="fa-solid fa-train text-primary fs-3"></i>
+              <div>
+                <h6 class="fw-bold mb-1" id="display-route">
+                  SE3 - Sài Gòn ➜ Hà Nội
+                </h6>
+                <small class="text-muted" id="display-date"
+                  >15/05/2026 • 06:00</small
+                >
+              </div>
+            </div>
+
+            <!-- Thanh chọn Toa xe -->
+            <div class="d-flex gap-2 mb-4 overflow-x-auto pb-1">
+              <button class="btn-coach-tab">Toa 1</button>
+              <button class="btn-coach-tab active">Toa 2</button>
+              <button class="btn-coach-tab">Toa 3</button>
+              <button class="btn-coach-tab">Toa 4</button>
+              <button class="btn-coach-tab">Toa 5</button>
+            </div>
+
+            <!-- Ghi chú trạng thái -->
+            <div
+              class="d-flex justify-content-center gap-4 mb-4 flex-wrap small text-muted"
+            >
+              <div><span class="seat-status-dot bg-white"></span> Trống</div>
+              <div>
+                <span class="seat-status-dot seat-selected-dot"></span> Đang
+                chọn
+              </div>
+              <div>
+                <span class="seat-status-dot seat-pending-dot"></span> Đang giữ
+              </div>
+              <div>
+                <span class="seat-status-dot seat-occupied-dot"></span> Đã bán
+              </div>
+            </div>
+
+            <!-- Lưới hiển thị ghế dọc hành lang tàu -->
+            <div class="seat-grid-container bg-light p-4 rounded-3 border">
+              <div class="text-center text-muted small mb-4">
+                <i class="fa-solid fa-arrow-left me-1"></i> Đầu tàu
+              </div>
+
+              <!-- Hàng 1 -->
+              <div class="seat-row">
+                <div class="seat-box">1</div>
+                <div class="seat-box occupied">2</div>
+                <div></div>
+                <!-- Lối đi ở giữa -->
+                <div class="seat-box">3</div>
+                <div class="seat-box">4</div>
+              </div>
+
+              <!-- Hàng 2 -->
+              <div class="seat-row">
+                <div class="seat-box occupied">5</div>
+                <div class="seat-box selected">6</div>
+                <div></div>
+                <div class="seat-box selected">7</div>
+                <div class="seat-box">8</div>
+              </div>
+
+              <!-- Hàng 3 -->
+              <div class="seat-row">
+                <div class="seat-box">9</div>
+                <div class="seat-box">10</div>
+                <div></div>
+                <div class="seat-box occupied">11</div>
+                <div class="seat-box">12</div>
+              </div>
+
+              <!-- Hàng 4 -->
+              <div class="seat-row">
+                <div class="seat-box">13</div>
+                <div class="seat-box">14</div>
+                <div></div>
+                <div class="seat-box occupied">15</div>
+                <div class="seat-box">16</div>
+              </div>
+
+              <!-- Hàng 5 -->
+              <div class="seat-row">
+                <div class="seat-box">17</div>
+                <div class="seat-box">18</div>
+                <div></div>
+                <div class="seat-box">19</div>
+                <div class="seat-box">20</div>
+              </div>
+
+              <!-- Hàng 6 -->
+              <div class="seat-row">
+                <div class="seat-box">21</div>
+                <div class="seat-box">22</div>
+                <div></div>
+                <div class="seat-box occupied">23</div>
+                <div class="seat-box occupied">24</div>
+              </div>
+
+              <!-- Hàng 7 -->
+              <div class="seat-row">
+                <div class="seat-box occupied">25</div>
+                <div class="seat-box">26</div>
+                <div></div>
+                <div class="seat-box occupied">27</div>
+                <div class="seat-box">28</div>
+              </div>
+
+              <!-- Hàng 8 -->
+              <div class="seat-row">
+                <div class="seat-box occupied">29</div>
+                <div class="seat-box">30</div>
+                <div></div>
+                <div class="seat-box occupied">31</div>
+                <div class="seat-box">32</div>
+              </div>
+
+              <!-- Hàng 9 -->
+              <div class="seat-row">
+                <div class="seat-box">33</div>
+                <div class="seat-box">34</div>
+                <div></div>
+                <div class="seat-box occupied">35</div>
+                <div class="seat-box">36</div>
+              </div>
+
+              <!-- Hàng 10 -->
+              <div class="seat-row">
+                <div class="seat-box">37</div>
+                <div class="seat-box occupied">38</div>
+                <div></div>
+                <div class="seat-box">39</div>
+                <div class="seat-box">40</div>
+              </div>
+
+              <!-- Hàng 11 -->
+              <div class="seat-row">
+                <div class="seat-box">41</div>
+                <div class="seat-box occupied">42</div>
+                <div></div>
+                <div class="seat-box">43</div>
+                <div class="seat-box occupied">44</div>
+              </div>
+
+              <!-- Hàng 12 -->
+              <div class="seat-row">
+                <div class="seat-box">45</div>
+                <div class="seat-box">46</div>
+                <div></div>
+                <div class="seat-box">47</div>
+                <div class="seat-box">48</div>
+              </div>
+
+              <div class="text-center text-muted small mt-4">
+                Cuối tàu <i class="fa-solid fa-arrow-right ms-1"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- BÊN PHẢI: BẢNG TÓM TẮT ĐƠN HÀNG (STICKY ORDER SUMMARY) -->
+        <div class="col-lg-4">
+          <div
+            class="p-4 bg-white border rounded-3 shadow-sm position-sticky"
+            style="top: 24px"
+          >
+            <h5 class="fw-bold mb-4 text-dark">Tóm tắt đơn hàng</h5>
+
+            <!-- Bộ đếm ngược thời gian giữ chỗ -->
+            <div
+              class="d-flex justify-content-between align-items-center p-3 rounded-3 mb-4"
+              style="background-color: #f8fafc; border: 1px solid #e2e8f0"
+            >
+              <span class="text-muted small"
+                ><i class="fa-regular fa-clock me-1"></i>Giữ chỗ còn</span
+              >
+              <strong class="fs-5 text-dark" id="countdown-timer">09:18</strong>
+            </div>
+
+            <!-- Thông tin chi tiết hành trình -->
+            <div class="mb-3">
+              <small class="text-muted d-block">Tuyến</small>
+              <strong class="text-dark" id="summary-route"
+                >Sài Gòn ➜ Hà Nội</strong
+              >
+            </div>
+
+            <div class="mb-3">
+              <small class="text-muted d-block">Ngày giờ</small>
+              <strong class="text-dark" id="summary-date"
+                >15/05/2026 - 06:00</strong
+              >
+            </div>
+
+            <div class="mb-3">
+              <small class="text-muted d-block">Chuyến tàu</small>
+              <strong class="text-dark" id="summary-train">SE3</strong>
+            </div>
+
+            <div class="mb-3">
+              <small class="text-muted d-block">Toa tàu</small>
+              <strong class="text-dark">Toa 2</strong>
+            </div>
+
+            <!-- Ghế đã chọn (Thẻ oval màu vàng) -->
+            <div class="mb-4">
+              <small class="text-muted d-block mb-2">Ghế đã chọn</small>
+              <div class="d-flex gap-2">
+                <span class="badge-seat-tag">T2-6</span>
+                <span class="badge-seat-tag">T2-7</span>
+              </div>
+            </div>
+
+            <hr class="opacity-25 my-3" />
+
+            <div class="d-flex justify-content-between mb-2 small">
+              <span class="text-muted">Số lượng ghế</span>
+              <strong class="text-dark">2</strong>
+            </div>
+
+            <div class="d-flex justify-content-between mb-3 small">
+              <span class="text-muted">Giá vé</span>
+              <strong class="text-dark">2.400.000đ</strong>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+              <span class="fw-bold text-dark">Tổng cộng</span>
+              <h4
+                class="fw-bold text-warning mb-0"
+                style="color: #f4b71a !important"
+              >
+                2.400.000đ
+              </h4>
+            </div>
+
+            <!-- Hệ thống nút chuyển trang -->
+            <button
+              type="button"
+              class="btn btn-warning w-100 fw-bold py-2 rounded-3 text-white mb-2"
+              onclick="
+                if (document.querySelector('.badge-seat-tag')) {
+                  showToast(
+                    'Đặt chỗ thành công! Đang chuyển sang cổng thanh toán...',
+                    'success',
+                  );
+                  setTimeout(() => {
+                    window.location.href = 'information.html';
+                  }, 1500);
+                } else {
+                  showToast(
+                    'Vui lòng click chọn ít nhất một vị trí ghế ngồi trước khi tiếp tục!',
+                    'error',
+                  );
+                }
+              "
+              style="background-color: #f4b71a; border: none"
+            >
+              Tiếp tục
+            </button>
+            <a
+              href="routes.html"
+              class="btn btn-outline-primary w-100 fw-bold py-2 rounded-3 text-decoration-none text-center"
+              >Quay lại</a
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer
+      class="text-white py-5"
+      style="background-color: #1a3cb3; font-size: 0.9rem"
+    >
+      <div class="container">
+        <div class="row g-4">
+          <div class="col-md-4">
+            <h5 class="fw-bold mb-3">
+              <i class="fa-solid fa-train"></i> G7 TrainTick
+            </h5>
+            <p class="text-white-50">
+              Hệ thống đặt vé tàu trực tuyến nhanh chóng, an toàn và tiện lợi.
+            </p>
+          </div>
+          <div class="col-md-2">
+            <h6 class="fw-bold mb-3">Về TrainTick</h6>
+            <ul class="list-unstyled text-white-50 d-flex flex-column gap-2">
+              <li>Giới thiệu</li>
+              <li>Điều khoản sử dụng</li>
+              <li>Chính sách bảo mật</li>
+              <li>Quy chế hoạt động</li>
+            </ul>
+          </div>
+          <div class="col-md-2">
+            <h6 class="fw-bold mb-3">Hỗ trợ</h6>
+            <ul class="list-unstyled text-white-50 d-flex flex-column gap-2">
+              <li>Hướng dẫn đặt vé</li>
+              <li>Chính sách hoàn vé</li>
+              <li>Câu hỏi thường gặp</li>
+              <li>Liên hệ</li>
+            </ul>
+          </div>
+          <div class="col-md-4">
+            <h6 class="fw-bold mb-3">Liên hệ</h6>
+            <ul class="list-unstyled text-white-50 d-flex flex-column gap-2">
+              <li><i class="fa-solid fa-phone me-2"></i>Hotline: 1900-xxxx</li>
+              <li>
+                <i class="fa-solid fa-envelope me-2"></i>support@g7traintick.vn
+              </li>
+              <li>
+                <i class="fa-solid fa-location-dot me-2"></i>Hà Nội, Việt Nam
+              </li>
+            </ul>
+          </div>
+        </div>
+        <hr class="my-4 opacity-25" />
+        <p class="text-center text-white-50 mb-0">
+          © 2026 G7 TrainTick. Tất cả quyền được bảo lưu.
+        </p>
+      </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/tickets.js"></script>
+      <script src="js/api-front.js"></script>
+  </body>
+</html>

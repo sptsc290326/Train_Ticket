@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>TrainTick - Đánh giá chuyến đi</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-dark custom-navbar">
+      <div class="container">
+        <a class="navbar-brand fw-bold" href="#">
+          <i class="fa-solid fa-train"></i>
+          TrainTick
+        </a>
+        <button
+          class="navbar-toggler"
+          data-bs-toggle="collapse"
+          data-bs-target="#menu"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="menu">
+          <ul class="navbar-nav mx-auto">
+            <li class="nav-item">
+              <a class="nav-link active" href="home.html">Trang chủ</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="routes.html">Tìm chuyến</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="view_tickets.html">Vé của tôi</a>
+            </li>
+          </ul>
+          <div class="d-flex align-items-center gap-3">
+            <span class="phone">
+              <i class="fa-solid fa-phone"></i>
+              1900-xxxx
+            </span>
+            <button class="account-btn">
+              <i class="fa-regular fa-user"></i>
+              Tài khoản
+            </button>
+          </div>
+        </div>
+      </div>
+    </nav>
+    <section class="main-section">
+      <div class="container custom-container">
+        <a href="javascript:void(0)" class="back-link" onclick="history.back()">
+          <i class="fa-solid fa-arrow-left"></i> Quay lại
+        </a>
+        <div class="ticket-card">
+          <div>
+            <h4>SE3</h4>
+            <div class="route">Hà Nội ➜ Đà Nẵng</div>
+            <div class="date">15/05/2026</div>
+          </div>
+          <div class="text-end">
+            <div class="ticket-label">Mã vé</div>
+            <div class="ticket-code">TK002</div>
+          </div>
+        </div>
+
+        <div class="review-box">
+          <h2>Đánh giá chuyến đi</h2>
+          <label>Đánh giá của bạn</label>
+          <div class="stars">
+            <i class="fa-regular fa-star star-rating" data-value="1"></i>
+            <i class="fa-regular fa-star star-rating" data-value="2"></i>
+            <i class="fa-regular fa-star star-rating" data-value="3"></i>
+            <i class="fa-regular fa-star star-rating" data-value="4"></i>
+            <i class="fa-regular fa-star star-rating" data-value="5"></i>
+          </div>
+          <small class="rating-note"> Chọn số sao để đánh giá </small>
+          <label class="mt-4 d-block">Nhận xét của bạn</label>
+          <textarea
+            id="reviewInput"
+            class="form-control review-textarea"
+            placeholder="Chia sẻ trải nghiệm của bạn về chuyến đi này..."
+          ></textarea>
+          <button type="button" class="send-btn" onclick="sendReview()">
+            <i class="fa-regular fa-paper-plane"></i>
+            Gửi đánh giá
+          </button>
+        </div>
+        <h3 class="review-title">Đánh giá từ khách hàng khác</h3>
+        <div id="reviewList">
+          <div class="customer-card">
+            <div class="review-header">
+              <strong>Nguyễn Văn A</strong>
+              <span>10/05/2026</span>
+            </div>
+            <div class="star-yellow">★★★★★</div>
+            <p>
+              Chuyến đi rất tốt, tàu sạch sẽ, nhân viên phục vụ nhiệt tình. Sẽ
+              tiếp tục sử dụng dịch vụ.
+            </p>
+            <div class="reply-box">
+              <strong>Phản hồi từ G7 TrainTick</strong>
+              <p>
+                Cảm ơn bạn đã đánh giá! Chúng tôi rất vui khi bạn hài lòng với
+                dịch vụ.
+              </p>
+            </div>
+          </div>
+          <div class="customer-card">
+            <div class="review-header">
+              <strong>Trần Thị B</strong>
+              <span>08/05/2026</span>
+            </div>
+            <div class="star-yellow">★★★★☆</div>
+            <p>Nhìn chung ổn, nhưng giờ khởi hành bị trễ 15 phút.</p>
+            <div class="text-end">
+              <button
+                type="button"
+                class="reply-btn"
+                onclick="showReplyForm(this)"
+              >
+                <i class="fa-regular fa-user"></i>
+                Phản hồi
+              </button>
+            </div>
+          </div>
+          <div class="customer-card">
+            <div class="review-header">
+              <strong>Lê Văn C</strong>
+              <span>05/05/2026</span>
+            </div>
+            <div class="star-yellow">★★★★★</div>
+            <p>
+              Tuyệt vời! Đặt vé online rất tiện lợi, vé điện tử QR code dễ sử
+              dụng.
+            </p>
+            <div class="reply-box">
+              <strong>Phản hồi từ G7 TrainTick</strong>
+              <p>
+                Cảm ơn bạn rất nhiều! Chúc bạn có những chuyến đi tiếp theo thật
+                tuyệt vời.
+              </p>
+            </div>
+          </div>
+        </div>
+        <div id="replyForm" class="review-box" style="display: none">
+          <h2>Phản hồi đánh giá</h2>
+          <label>Nhận xét của bạn</label>
+
+          <textarea
+            id="replyInput"
+            class="form-control review-textarea"
+            placeholder="Nhập nội dung phản hồi..."
+          ></textarea>
+
+          <button type="button" class="send-btn" onclick="sendReply()">
+            <i class="fa-regular fa-paper-plane"></i> Gửi phản hồi
+          </button>
+        </div>
+      </div>
+    </section>
+    <footer>
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-3 col-md-6 footer-col">
+            <h5>
+              <i class="fa-solid fa-train"></i>
+              G7 TrainTick
+            </h5>
+            <p>
+              Hệ thống đặt vé tàu trực tuyến nhanh chóng, an toàn và tiện lợi.
+            </p>
+          </div>
+          <div class="col-lg-3 col-md-6 footer-col">
+            <h5>Về TrainTick</h5>
+            <ul>
+              <li>Giới thiệu</li>
+              <li>Điều khoản sử dụng</li>
+              <li>Chính sách bảo mật</li>
+              <li>Quy chế hoạt động</li>
+            </ul>
+          </div>
+          <div class="col-lg-3 col-md-6 footer-col">
+            <h5>Hỗ trợ</h5>
+            <ul>
+              <li>Hướng dẫn đặt vé</li>
+              <li>Chính sách hoàn vé</li>
+              <li>Câu hỏi thường gặp</li>
+              <li>Liên hệ</li>
+            </ul>
+          </div>
+          <div class="col-lg-3 col-md-6 footer-col">
+            <h5>Liên hệ</h5>
+            <ul>
+              <li>☎ Hotline: 1900-xxxx</li>
+              <li>✉ support@g7traintick.vn</li>
+              <li>📍 Hà Nội, Việt Nam</li>
+            </ul>
+          </div>
+        </div>
+        <hr />
+        <p class="copyright">© 2026 G7 TrainTick. Tất cả quyền được bảo lưu.</p>
+      </div>
+    </footer>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/function.js"></script>
+      <script src="js/api-front.js"></script>
+  </body>
+</html>
