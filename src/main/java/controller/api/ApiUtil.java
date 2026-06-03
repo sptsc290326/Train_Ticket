@@ -27,12 +27,15 @@ public class ApiUtil {
         StringBuilder body = new StringBuilder();
         BufferedReader reader = request.getReader();
         String line;
+
         while ((line = reader.readLine()) != null) {
             body.append(line);
         }
+
         if (body.length() == 0) {
             return new JsonObject();
         }
+
         return JsonParser.parseString(body.toString()).getAsJsonObject();
     }
 
@@ -40,16 +43,14 @@ public class ApiUtil {
         if (json == null || !json.has(name) || json.get(name).isJsonNull()) {
             return null;
         }
+
         String value = json.get(name).getAsString();
         return value == null ? null : value.trim();
     }
 
     public static String getString(JsonObject json, String name, String fallback) {
         String value = getString(json, name);
-        if (isBlank(value)) {
-            return fallback;
-        }
-        return value;
+        return isBlank(value) ? fallback : value;
     }
 
     public static boolean isBlank(String value) {
@@ -72,6 +73,10 @@ public class ApiUtil {
         write(response, HttpServletResponse.SC_UNAUTHORIZED, false, message, null);
     }
 
+    public static void forbidden(HttpServletResponse response, String message) throws IOException {
+        write(response, HttpServletResponse.SC_FORBIDDEN, false, message, null);
+    }
+
     public static void notFound(HttpServletResponse response, String message) throws IOException {
         write(response, HttpServletResponse.SC_NOT_FOUND, false, message, null);
     }
@@ -88,12 +93,15 @@ public class ApiUtil {
 
         Map<String, Object> result = new HashMap<String, Object>();
         result.put("success", success);
+
         if (message != null) {
             result.put("message", message);
         }
+
         if (data != null) {
             result.put("data", data);
         }
+
         response.getWriter().write(GSON.toJson(result));
     }
 }

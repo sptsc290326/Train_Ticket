@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin - Phản hồi đánh giá</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="dashboard">
+    <aside class="sidebar">
+      <div class="logo">
+        <i class="fa-solid fa-train"></i>
+        G7 TrainTick
+        <div style="font-size:12px;font-weight:normal;opacity:.7;margin-top:-5px;width:100%;">Admin Dashboard</div>
+      </div>
+
+      <ul>
+        <li><a href="#" onclick="showDeveloping('Tổng quan')"><i class="fa-solid fa-chart-line"></i><span>Tổng quan</span></a></li>
+        <li><a href="#" onclick="showDeveloping('Quản lý chuyến tàu')"><i class="fa-solid fa-route"></i><span>Quản lý chuyến tàu</span></a></li>
+        <li><a href="#" onclick="showDeveloping('Quản lý vé')"><i class="fa-solid fa-ticket"></i><span>Quản lý vé</span></a></li>
+        <li><a href="#" onclick="showDeveloping('Khách hàng')"><i class="fa-solid fa-users"></i><span>Khách hàng</span></a></li>
+        <li><a href="#" onclick="showDeveloping('Đánh giá')"><i class="fa-solid fa-star"></i><span>Đánh giá</span></a></li>
+        <li class="active"><a href="admin-replies.html"><i class="fa-solid fa-comments"></i><span>Phản hồi</span></a></li>
+        <li><a href="#" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i><span>Đăng xuất</span></a></li>
+      </ul>
+    </aside>
+
+    <main class="content">
+      <div class="content-header">
+        <div>
+          <h2>Phản hồi đánh giá</h2>
+          <p>Quản lý và phản hồi đánh giá từ khách hàng</p>
+        </div>
+      </div>
+
+      <h4 class="fw-bold mb-3">Đánh giá từ khách hàng</h4>
+      <div id="adminReviewList">
+        <div class="customer-card text-muted">Đang tải danh sách đánh giá...</div>
+      </div>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="js/function.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", loadAdminReviews);
+
+    function showDeveloping(name) {
+      alert(name + " đang phát triển. Hiện tại admin chỉ dùng chức năng Phản hồi.");
+    }
+
+    async function apiGet(url) {
+      const res = await fetch(url, { credentials: "include" });
+      const contentType = res.headers.get("content-type") || "";
+      if (!contentType.includes("application/json")) {
+        const text = await res.text();
+        console.error("Server returned non-JSON:", text.substring(0, 300));
+        throw new Error("API chưa chạy hoặc chưa deploy ApiReviewController. Hãy mở /api/reviews để kiểm tra.");
+      }
+      const json = await res.json();
+      if (!res.ok || json.success === false) throw new Error(json.message || "Lỗi API");
+      return json.data;
+    }
+
+    async function apiPost(url, body) {
+      const res = await fetch(url, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+      });
+      const contentType = res.headers.get("content-type") || "";
+      if (!contentType.includes("application/json")) {
+        const text = await res.text();
+        console.error("Server returned non-JSON:", text.substring(0, 300));
+        throw new Error("API chưa chạy hoặc chưa deploy ApiReviewController.");
+      }
+      const json = await res.json();
+      if (!res.ok || json.success === false) throw new Error(json.message || "Lỗi API");
+      return json.data;
+    }
+
+    async function loadAdminReviews() {
+      const box = document.getElementById("adminReviewList");
+      try {
+        const reviews = await apiGet("api/reviews");
+        if (!reviews || reviews.length === 0) {
+          box.innerHTML = `<div class="customer-card text-muted">Chưa có đánh giá nào trong hệ thống.</div>`;
+          return;
+        }
+
+        const groups = groupReviewsByTicket(reviews);
+        box.innerHTML = groups.map(renderTicketGroup).join("");
+      } catch (e) {
+        box.innerHTML = `<div class="alert alert-danger">${escapeHtml(e.message)}</div>`;
+      }
+    }
+
+    function groupReviewsByTicket(reviews) {
+      const map = new Map();
+      reviews.forEach(r => {
+        const key = r.idVe || r.id;
+        map.set(key, {
+          idChuyenTau: r.idChuyenTau,
+          tenTau: r.tenTau || r.idChuyenTau || "Chuyến tàu",
+          gaDi: r.gaDi || "Ga đi",
+          gaDen: r.gaDen || "Ga đến",
+          ngayGioKhoiHanh: r.ngayGioKhoiHanh,
+          idVe: r.idVe || "Không rõ",
+          review: r
+        });
+      });
+      return Array.from(map.values()).sort((a, b) => new Date(b.ngayGioKhoiHanh || 0) - new Date(a.ngayGioKhoiHanh || 0));
+    }
+
+    function renderTicketGroup(group) {
+      return `
+        <div class="mb-4">
+          <div class="ticket-card">
+            <div>
+              <h4>${escapeHtml(shortTrainName(group.tenTau))}</h4>
+              <div class="route">${escapeHtml(group.gaDi)} ➜ ${escapeHtml(group.gaDen)}</div>
+              <div class="date">${formatDate(group.ngayGioKhoiHanh)}</div>
+            </div>
+            <div class="text-end">
+              <div class="ticket-label">Mã vé</div>
+              <div class="ticket-code">${escapeHtml(group.idVe)}</div>
+            </div>
+          </div>
+          ${renderReviewCard(group.review)}
+        </div>
+      `;
+    }
+
+    function renderReviewCard(review) {
+      const soSao = Number(review.soSao || 0);
+      const stars = "★".repeat(soSao) + "☆".repeat(Math.max(0, 5 - soSao));
+      const tenKhachHang = escapeHtml(review.tenKhachHang || "Khách hàng");
+      const noiDung = escapeHtml(review.noiDung || "Không có nội dung đánh giá.");
+      const phanHoi = escapeHtml(review.phanHoi || "");
+      const reviewId = escapeHtml(review.id);
+
+      let replyHtml;
+      if (review.phanHoi) {
+        replyHtml = `
+          <div class="reply-box">
+            <strong>Phản hồi từ G7 TrainTick</strong>
+            <p>${phanHoi}</p>
+          </div>
+          <div class="alert alert-success py-2 mt-3 mb-0">Đã phản hồi. Mỗi đánh giá chỉ được phản hồi 1 lần.</div>
+        `;
+      } else {
+        replyHtml = `
+          <div class="review-box mt-4">
+            <h3 class="fw-bold mb-3">Phản hồi đánh giá</h3>
+            <label class="form-label">Nhận xét của admin</label>
+            <textarea id="reply-${reviewId}" class="form-control review-textarea" placeholder="Nhập nội dung phản hồi..."></textarea>
+            <button type="button" class="send-btn" onclick="sendAdminReply('${reviewId}')">
+              <i class="fa-regular fa-paper-plane"></i> Gửi phản hồi
+            </button>
+          </div>
+        `;
+      }
+
+      return `
+        <div class="customer-card">
+          <div class="review-header">
+            <strong>${tenKhachHang}</strong>
+            <span>${formatDate(review.thoiGianDanhGia)}</span>
+          </div>
+          <div class="star-yellow">${stars}</div>
+          <p>${noiDung}</p>
+          ${replyHtml}
+        </div>
+      `;
+    }
+
+    async function sendAdminReply(reviewId) {
+      const input = document.getElementById("reply-" + reviewId);
+      const replyContent = input.value.trim();
+      if (replyContent === "") {
+        alert("Vui lòng nhập nội dung phản hồi!");
+        return;
+      }
+
+      const currentUser = getCurrentUser();
+      const adminId = currentUser && currentUser.vaiTro === "ADMIN" ? currentUser.id : null;
+      try {
+        await apiPost("api/reviews/reply", { reviewId, adminId, replyContent });
+        alert("Đã gửi phản hồi.");
+        loadAdminReviews();
+      } catch (e) {
+        alert(e.message);
+      }
+    }
+
+    function getCurrentUser() {
+      try { return JSON.parse(localStorage.getItem("currentUser") || "null"); } catch (e) { return null; }
+    }
+
+    function shortTrainName(name) {
+      const text = String(name || "");
+      const match = text.match(/SE\d+/i);
+      return match ? match[0].toUpperCase() : text;
+    }
+
+    function formatDate(value) {
+      if (!value) return "";
+      const d = new Date(value);
+      return Number.isNaN(d.getTime()) ? value : d.toLocaleDateString("vi-VN");
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+  </script>
+</body>
+</html>

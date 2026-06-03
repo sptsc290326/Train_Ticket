@@ -27,16 +27,20 @@ public class ApiAuthController extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         String path = request.getServletPath();
+
         if ("/api/auth/me".equals(path)) {
             HttpSession session = request.getSession(false);
+
             if (session == null || session.getAttribute("userId") == null) {
                 ApiUtil.unauthorized(response, "Chua dang nhap");
                 return;
             }
+
             Map<String, Object> data = new HashMap<String, Object>();
             data.put("id", session.getAttribute("userId"));
             data.put("hoTen", session.getAttribute("hoTen"));
             data.put("vaiTro", session.getAttribute("vaiTro"));
+
             ApiUtil.ok(response, data);
             return;
         }
@@ -64,10 +68,12 @@ public class ApiAuthController extends HttpServlet {
     private void login(HttpServletRequest request, HttpServletResponse response) throws IOException {
         try {
             JsonObject json = ApiUtil.readJson(request);
+
             String email = ApiUtil.getString(json, "email");
             if (ApiUtil.isBlank(email)) {
                 email = ApiUtil.getString(json, "username");
             }
+
             String password = ApiUtil.getString(json, "password");
             if (ApiUtil.isBlank(password)) {
                 password = ApiUtil.getString(json, "matKhau");
@@ -169,6 +175,7 @@ public class ApiAuthController extends HttpServlet {
     private String taoMaUserMoi() {
         String lastId = userService.getLastId();
         int newIdNum = 1;
+
         if (lastId != null && lastId.length() > 1) {
             try {
                 newIdNum = Integer.parseInt(lastId.substring(1)) + 1;
@@ -176,6 +183,7 @@ public class ApiAuthController extends HttpServlet {
                 newIdNum = 1;
             }
         }
+
         return String.format("U%02d", newIdNum);
     }
 

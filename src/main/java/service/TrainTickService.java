@@ -174,6 +174,41 @@ public class TrainTickService {
         }
     }
 
+    public boolean hasReview(String ticketId) {
+        EntityManager em = HibernateUtil.getEntityManager();
+        try {
+            if (isBlank(ticketId)) {
+                return false;
+            }
+            Long count = em.createQuery(
+                    "SELECT COUNT(d) FROM DanhGia d WHERE d.ve.id = :idVe", Long.class)
+                    .setParameter("idVe", ticketId.trim())
+                    .getSingleResult();
+            return count != null && count > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        } finally {
+            em.close();
+        }
+    }
+
+    public boolean hasReply(String reviewId) {
+        EntityManager em = HibernateUtil.getEntityManager();
+        try {
+            if (isBlank(reviewId)) {
+                return false;
+            }
+            DanhGia danhGia = em.find(DanhGia.class, reviewId.trim());
+            return danhGia != null && !isBlank(danhGia.getPhanHoi());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        } finally {
+            em.close();
+        }
+    }
+
     public boolean createReview(String reviewId, String ticketId, int stars, String content) {
         EntityManager em = HibernateUtil.getEntityManager();
         EntityTransaction tx = em.getTransaction();
@@ -187,7 +222,13 @@ public class TrainTickService {
             }
 
             Ve ve = em.find(Ve.class, ticketId);
-            if (ve == null || !"HOAN_THANH".equals(ve.getTrangThaiVe())) {
+            if (ve == null) {
+                tx.rollback();
+                return false;
+            }
+
+            String trangThaiVe = ve.getTrangThaiVe();
+            if (!("HOAN_THANH".equals(trangThaiVe) || "DA_THANH_TOAN".equals(trangThaiVe))) {
                 tx.rollback();
                 return false;
             }
@@ -238,6 +279,11 @@ public class TrainTickService {
 
             DanhGia danhGia = em.find(DanhGia.class, reviewId, LockModeType.PESSIMISTIC_WRITE);
             if (danhGia == null) {
+                tx.rollback();
+                return false;
+            }
+
+            if (!isBlank(danhGia.getPhanHoi())) {
                 tx.rollback();
                 return false;
             }

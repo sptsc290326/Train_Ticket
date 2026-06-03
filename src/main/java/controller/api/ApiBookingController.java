@@ -12,6 +12,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -24,17 +25,21 @@ import service.BookingService;
 @WebServlet("/api/booking/create")
 public class ApiBookingController extends HttpServlet {
     private static final long serialVersionUID = 1L;
+
     private final BookingService bookingService = new BookingService();
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         request.setCharacterEncoding("UTF-8");
+
         try {
             JsonObject json = ApiUtil.readJson(request);
             String userId = ApiUtil.getString(json, "userId");
+
             if (ApiUtil.isBlank(userId)) {
-                Object sessionUserId = request.getSession(false) == null ? null : request.getSession(false).getAttribute("userId");
+                HttpSession session = request.getSession(false);
+                Object sessionUserId = session == null ? null : session.getAttribute("userId");
                 userId = sessionUserId == null ? null : String.valueOf(sessionUserId);
             }
 
@@ -64,6 +69,7 @@ public class ApiBookingController extends HttpServlet {
             data.put("idVe", ve.getId());
             data.put("tongTien", ve.getTongTien() == null ? "0" : ve.getTongTien().toPlainString());
             data.put("trangThaiVe", ve.getTrangThaiVe());
+
             ApiUtil.created(response, data);
         } catch (Exception e) {
             e.printStackTrace();
@@ -73,10 +79,14 @@ public class ApiBookingController extends HttpServlet {
 
     private List<String> readSeatIds(JsonObject json) {
         List<String> seatIds = new ArrayList<String>();
+
         if (json.has("seatIds") && json.get("seatIds").isJsonArray()) {
-            for (JsonElement e : json.getAsJsonArray("seatIds")) {
-                if (!e.isJsonNull()) {
-                    seatIds.add(e.getAsString());
+            for (JsonElement element : json.getAsJsonArray("seatIds")) {
+                if (!element.isJsonNull()) {
+                    String id = element.getAsString();
+                    if (!ApiUtil.isBlank(id)) {
+                        seatIds.add(id.trim());
+                    }
                 }
             }
         } else {
@@ -89,6 +99,7 @@ public class ApiBookingController extends HttpServlet {
                 }
             }
         }
+
         return seatIds;
     }
 
@@ -97,7 +108,8 @@ public class ApiBookingController extends HttpServlet {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 
         JsonArray arr = json.has("passengers") && json.get("passengers").isJsonArray()
-                ? json.getAsJsonArray("passengers") : new JsonArray();
+                ? json.getAsJsonArray("passengers")
+                : new JsonArray();
 
         for (int i = 0; i < arr.size(); i++) {
             JsonObject p = arr.get(i).getAsJsonObject();
@@ -105,10 +117,12 @@ public class ApiBookingController extends HttpServlet {
             hk.setHoTen(ApiUtil.getString(p, "hoTen"));
             hk.setCCCD(emptyToNull(firstNotBlank(ApiUtil.getString(p, "CCCD"), ApiUtil.getString(p, "cccd"))));
             hk.setSdt(emptyToNull(ApiUtil.getString(p, "sdt")));
+
             String ngaySinh = ApiUtil.getString(p, "ngaySinh");
             if (!ApiUtil.isBlank(ngaySinh)) {
                 hk.setNgaySinh(sdf.parse(ngaySinh));
             }
+
             passengers.add(hk);
         }
 

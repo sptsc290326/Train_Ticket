@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.persistence.EntityManager;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -15,6 +16,7 @@ import javax.servlet.http.HttpServletResponse;
 import model.ChiTietVe;
 import model.Ve;
 import service.TicketService;
+import util.HibernateUtil;
 
 @WebServlet(urlPatterns = { "/api/tickets", "/api/tickets/detail" })
 public class ApiTicketController extends HttpServlet {
@@ -24,7 +26,9 @@ public class ApiTicketController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        request.setCharacterEncoding("UTF-8");
         String path = request.getServletPath();
+
         if ("/api/tickets".equals(path)) {
             list(request, response);
         } else if ("/api/tickets/detail".equals(path)) {
@@ -45,14 +49,84 @@ public class ApiTicketController extends HttpServlet {
             return;
         }
 
-        List<Ve> tickets = ticketService.layVeTheoNguoiDat(userId);
-        List<Map<String, Object>> data = new ArrayList<Map<String, Object>>();
-        if (tickets != null) {
-            for (Ve ve : tickets) {
-                data.add(ticketToMap(ve));
+        String statusGroup = request.getParameter("statusGroup");
+        String status = request.getParameter("status");
+
+        EntityManager em = HibernateUtil.getEntityManager();
+        try {
+            StringBuilder sql = new StringBuilder();
+            sql.append("SELECT v.ID, v.ngayDat, v.tongTien, v.trangThaiVe, ");
+            sql.append("u.ID AS idNguoiDat, u.hoTen AS tenNguoiDat, ");
+            sql.append("ct.ID AS idChuyenTau, tau.tenTau, gaDi.tenGa AS gaDi, gaDen.tenGa AS gaDen, ");
+            sql.append("ct.ngayGioKhoiHanh, ct.ngayGioDen, ");
+            sql.append("GROUP_CONCAT(DISTINCT CONCAT('T', toa.soToa, '-', gn.viTriGhe) ORDER BY toa.soToa, gn.viTriGhe SEPARATOR ', ') AS ghe, ");
+            sql.append("COUNT(DISTINCT dg.ID) AS soDanhGia ");
+            sql.append("FROM `Ve` v ");
+            sql.append("JOIN `User` u ON v.idNguoiDat = u.ID ");
+            sql.append("LEFT JOIN `ChiTietVe` ctv ON ctv.idVe = v.ID ");
+            sql.append("LEFT JOIN `GheChuyen` gc ON ctv.idGheChuyen = gc.ID ");
+            sql.append("LEFT JOIN `GheNgoi` gn ON gc.idGhe = gn.ID ");
+            sql.append("LEFT JOIN `ToaTau` toa ON gn.idToa = toa.ID ");
+            sql.append("LEFT JOIN `ChuyenTau` ct ON gc.idChuyenTau = ct.ID ");
+            sql.append("LEFT JOIN `Tau` tau ON ct.idTau = tau.ID ");
+            sql.append("LEFT JOIN `TuyenDuong` td ON ct.idTuyenDuong = td.ID ");
+            sql.append("LEFT JOIN `GaTau` gaDi ON td.idGaDi = gaDi.ID ");
+            sql.append("LEFT JOIN `GaTau` gaDen ON td.idGaDen = gaDen.ID ");
+            sql.append("LEFT JOIN `DanhGia` dg ON dg.idVe = v.ID ");
+            sql.append("WHERE v.idNguoiDat = ? ");
+
+            boolean completed = "completed".equalsIgnoreCase(statusGroup) || "HOAN_THANH".equalsIgnoreCase(status);
+            if (completed) {
+                sql.append("AND UPPER(v.trangThaiVe) IN ('HOAN_THANH','DA_HOAN_THANH','HOAN_TAT','DA_SU_DUNG') ");
+            } else if (!ApiUtil.isBlank(status)) {
+                sql.append("AND UPPER(v.trangThaiVe) = UPPER(?) ");
             }
+
+            sql.append("GROUP BY v.ID, v.ngayDat, v.tongTien, v.trangThaiVe, u.ID, u.hoTen, ");
+            sql.append("ct.ID, tau.tenTau, gaDi.tenGa, gaDen.tenGa, ct.ngayGioKhoiHanh, ct.ngayGioDen ");
+            sql.append("ORDER BY v.ngayDat DESC, v.ID DESC");
+
+            javax.persistence.Query query = em.createNativeQuery(sql.toString());
+            query.setParameter(1, userId.trim());
+            if (!completed && !ApiUtil.isBlank(status)) {
+                query.setParameter(2, status.trim());
+            }
+
+            List<?> rows = query.getResultList();
+            List<Map<String, Object>> data = new ArrayList<Map<String, Object>>();
+            for (Object rowObj : rows) {
+                Object[] r = (Object[]) rowObj;
+                Map<String, Object> item = new HashMap<String, Object>();
+                item.put("id", value(r[0]));
+                item.put("ngayDat", r[1]);
+                item.put("tongTien", value(r[2]));
+                item.put("trangThaiVe", value(r[3]));
+                item.put("idNguoiDat", value(r[4]));
+                item.put("hoTenNguoiDat", value(r[5]));
+                item.put("idChuyenTau", value(r[6]));
+                item.put("tenTau", value(r[7]));
+                item.put("gaDi", value(r[8]));
+                item.put("gaDen", value(r[9]));
+                item.put("ngayGioKhoiHanh", r[10]);
+                item.put("ngayGioDen", r[11]);
+                item.put("ghe", value(r[12]));
+                int reviewCount = 0;
+                if (r[13] instanceof Number) {
+                    reviewCount = ((Number) r[13]).intValue();
+                } else if (r[13] != null) {
+                    try { reviewCount = Integer.parseInt(String.valueOf(r[13])); } catch (Exception ignored) {}
+                }
+                item.put("hasReview", reviewCount > 0);
+                item.put("soDanhGia", reviewCount);
+                data.add(item);
+            }
+            ApiUtil.ok(response, data);
+        } catch (Exception e) {
+            e.printStackTrace();
+            ApiUtil.serverError(response, "Loi lay danh sach ve: " + e.getMessage());
+        } finally {
+            em.close();
         }
-        ApiUtil.ok(response, data);
     }
 
     private void detail(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -108,5 +182,9 @@ public class ApiTicketController extends HttpServlet {
             item.put("hoTenNguoiDat", ve.getNguoiDat().getHoTen());
         }
         return item;
+    }
+
+    private String value(Object obj) {
+        return obj == null ? null : String.valueOf(obj);
     }
 }
