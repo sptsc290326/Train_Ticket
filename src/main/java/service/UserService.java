@@ -41,6 +41,7 @@ public class UserService {
         }
     }
 
+
     public void save(User user) {
         String encodedPassword = passwordEncoder.encode(user.getMatKhau());
         user.setMatKhau(encodedPassword);

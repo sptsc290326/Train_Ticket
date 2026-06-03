@@ -1,7 +1,15 @@
 package model;
 
-import javax.persistence.*;
 import java.util.Date;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
 @Entity
 @Table(name = "DanhGia")
@@ -11,14 +19,11 @@ public class DanhGia {
     private String id;
 
     @ManyToOne
-    @JoinColumn(name = "idUser", nullable = false)
-    private User user;
+    @JoinColumn(name = "idVe", nullable = false)
+    private Ve ve;
 
-    @Column(name = "idChuyenTau", nullable = false, length = 10)
-    private String idChuyenTau;
-
-    @Column(name = "soSao", nullable = false)
-    private int soSao;
+    @Column(name = "soSao")
+    private Integer soSao;
 
     @Column(name = "noiDung", columnDefinition = "TEXT")
     private String noiDung;
@@ -26,24 +31,82 @@ public class DanhGia {
     @Column(name = "phanHoi", columnDefinition = "TEXT")
     private String phanHoi;
 
+    @ManyToOne
+    @JoinColumn(name = "idAdminPhanHoi")
+    private User adminPhanHoi;
+
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "ngayDanhGia")
-    private Date ngayDanhGia;
+    @Column(name = "thoiGianDanhGia")
+    private Date thoiGianDanhGia;
 
-    public DanhGia() {}
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "thoiGianPhanHoi")
+    private Date thoiGianPhanHoi;
 
-    public String getId() { return id; }
-    public void setId(String id) { this.id = id; }
-    public User getUser() { return user; }
-    public void setUser(User user) { this.user = user; }
-    public String getIdChuyenTau() { return idChuyenTau; }
-    public void setIdChuyenTau(String idChuyenTau) { this.idChuyenTau = idChuyenTau; }
-    public int getSoSao() { return soSao; }
-    public void setSoSao(int soSao) { this.soSao = soSao; }
-    public String getNoiDung() { return noiDung; }
-    public void setNoiDung(String noiDung) { this.noiDung = noiDung; }
-    public String getPhanHoi() { return phanHoi; }
-    public void setPhanHoi(String phanHoi) { this.phanHoi = phanHoi; }
-    public Date getNgayDanhGia() { return ngayDanhGia; }
-    public void setNgayDanhGia(Date ngayDanhGia) { this.ngayDanhGia = ngayDanhGia; }
+    public DanhGia() {
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public Ve getVe() {
+        return ve;
+    }
+
+    public void setVe(Ve ve) {
+        this.ve = ve;
+    }
+
+    public Integer getSoSao() {
+        return soSao;
+    }
+
+    public void setSoSao(Integer soSao) {
+        this.soSao = soSao;
+    }
+
+    public String getNoiDung() {
+        return noiDung;
+    }
+
+    public void setNoiDung(String noiDung) {
+        this.noiDung = noiDung;
+    }
+
+    public String getPhanHoi() {
+        return phanHoi;
+    }
+
+    public void setPhanHoi(String phanHoi) {
+        this.phanHoi = phanHoi;
+    }
+
+    public User getAdminPhanHoi() {
+        return adminPhanHoi;
+    }
+
+    public void setAdminPhanHoi(User adminPhanHoi) {
+        this.adminPhanHoi = adminPhanHoi;
+    }
+
+    public Date getThoiGianDanhGia() {
+        return thoiGianDanhGia;
+    }
+
+    public void setThoiGianDanhGia(Date thoiGianDanhGia) {
+        this.thoiGianDanhGia = thoiGianDanhGia;
+    }
+
+    public Date getThoiGianPhanHoi() {
+        return thoiGianPhanHoi;
+    }
+
+    public void setThoiGianPhanHoi(Date thoiGianPhanHoi) {
+        this.thoiGianPhanHoi = thoiGianPhanHoi;
+    }
 }

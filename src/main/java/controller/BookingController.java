@@ -107,8 +107,8 @@ public class BookingController extends HttpServlet {
                 HanhKhach hk = new HanhKhach();
 
                 hk.setHoTen(hoTenArr[i]);
-                hk.setCCCD(cccdArr[i]);
-                hk.setSdt(sdtArr[i]);
+                hk.setCCCD(nullIfBlank(cccdArr[i]));
+                hk.setSdt(nullIfBlank(sdtArr[i]));
 
                 if (ngaySinhArr[i] != null && !ngaySinhArr[i].trim().isEmpty()) {
                     hk.setNgaySinh(sdf.parse(ngaySinhArr[i]));
@@ -121,7 +121,7 @@ public class BookingController extends HttpServlet {
 
             if (ve == null) {
                 request.setAttribute("message", "Tạo vé thất bại");
-//                request.getRequestDispatcher("/error.jsp").forward(request, response);
+                request.getRequestDispatcher("/WEB-INF/view/error.jsp").forward(request, response);
                 return;
             }
 
@@ -130,7 +130,7 @@ public class BookingController extends HttpServlet {
         } catch (Exception e) {
             e.printStackTrace();
             request.setAttribute("message", "Lỗi xử lý tạo vé: " + e.getMessage());
-            request.getRequestDispatcher("/error.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/view/error.jsp").forward(request, response);
         }
     }
 
@@ -150,4 +150,11 @@ public class BookingController extends HttpServlet {
         return Arrays.asList(seatIds.split(","));
     }
 
+
+    private String nullIfBlank(String value) {
+        if (value == null || value.trim().isEmpty()) {
+            return null;
+        }
+        return value.trim();
+    }
 }

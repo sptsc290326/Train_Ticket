@@ -7,7 +7,8 @@ import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
 import javax.persistence.Query;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Date;
 import java.util.List;
 
 public class TripService {
@@ -28,15 +29,15 @@ public class TripService {
     public List<ChuyenTau> searchTrips(String gaDiId, String gaDenId, LocalDate ngayDi) {
         EntityManager em = HibernateUtil.getEntityManager();
         try {
-            LocalDateTime startOfDay = ngayDi.atStartOfDay();
-            LocalDateTime endOfDay = ngayDi.plusDays(1).atStartOfDay();
+            Date startOfDay = Date.from(ngayDi.atStartOfDay(ZoneId.systemDefault()).toInstant());
+            Date endOfDay = Date.from(ngayDi.plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant());
 
             String hql = "SELECT DISTINCT ct FROM ChuyenTau ct " +
                          "JOIN FETCH ct.tuyenDuong td " +
                          "JOIN FETCH ct.tau " +
                          "WHERE td.gaDi.id = :gaDiId " +
                          "AND td.gaDen.id = :gaDenId " +
-                         "AND ct.ngayGioKhoiHanh BETWEEN :startOfDay AND :endOfDay " +
+                         "AND ct.ngayGioKhoiHanh >= :startOfDay AND ct.ngayGioKhoiHanh < :endOfDay " +
                          "AND ct.trangThaiChuyen = 'MO_BAN' " +
                          "ORDER BY ct.ngayGioKhoiHanh";
 

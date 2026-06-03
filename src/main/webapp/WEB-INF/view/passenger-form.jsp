@@ -56,5 +56,6 @@
     %>
 
     <button type="submit">Tạo vé</button>
+    </form>
 </body>
 </html>
