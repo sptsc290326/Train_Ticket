@@ -1,6 +1,7 @@
 package controller.api;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
@@ -29,19 +30,7 @@ public class ApiAuthController extends HttpServlet {
         String path = request.getServletPath();
 
         if ("/api/auth/me".equals(path)) {
-            HttpSession session = request.getSession(false);
-
-            if (session == null || session.getAttribute("userId") == null) {
-                ApiUtil.unauthorized(response, "Chua dang nhap");
-                return;
-            }
-
-            Map<String, Object> data = new HashMap<String, Object>();
-            data.put("id", session.getAttribute("userId"));
-            data.put("hoTen", session.getAttribute("hoTen"));
-            data.put("vaiTro", session.getAttribute("vaiTro"));
-
-            ApiUtil.ok(response, data);
+            me(request, response);
             return;
         }
 
@@ -62,6 +51,31 @@ public class ApiAuthController extends HttpServlet {
             logout(request, response);
         } else {
             ApiUtil.notFound(response, "API khong ton tai");
+        }
+    }
+
+    private void me(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        try {
+            HttpSession session = request.getSession(false);
+            if (session == null || session.getAttribute("userId") == null) {
+                ApiUtil.unauthorized(response, "Chua dang nhap");
+                return;
+            }
+
+            String userId = String.valueOf(session.getAttribute("userId"));
+            User user = userService.findById(userId);
+            if (user == null) {
+                session.invalidate();
+                ApiUtil.unauthorized(response, "Tai khoan khong con ton tai");
+                return;
+            }
+
+            session.setAttribute("hoTen", user.getHoTen());
+            session.setAttribute("vaiTro", user.getVaiTro());
+            ApiUtil.ok(response, userToMap(user));
+        } catch (Exception e) {
+            e.printStackTrace();
+            ApiUtil.serverError(response, "Loi lay thong tin tai khoan: " + e.getMessage());
         }
     }
 
@@ -112,8 +126,8 @@ public class ApiAuthController extends HttpServlet {
             String matKhau = firstNotBlank(ApiUtil.getString(json, "matKhau"), ApiUtil.getString(json, "password"));
             String nhapLaiMatKhau = firstNotBlank(ApiUtil.getString(json, "nhapLaiMatKhau"), ApiUtil.getString(json, "confirmPassword"));
             String cccd = firstNotBlank(ApiUtil.getString(json, "cccd"), ApiUtil.getString(json, "CCCD"));
-            String ngaySinhStr = ApiUtil.getString(json, "ngaySinh");
-            String gioiTinhStr = ApiUtil.getString(json, "gioiTinh");
+            String ngaySinhStr = firstNotBlank(ApiUtil.getString(json, "ngaySinh"), ApiUtil.getString(json, "dob"));
+            String gioiTinhStr = firstNotBlank(ApiUtil.getString(json, "gioiTinh"), ApiUtil.getString(json, "gender"));
 
             if (ApiUtil.isBlank(hoTen)) {
                 ApiUtil.badRequest(response, "Ho ten khong duoc de trong");
@@ -152,9 +166,7 @@ public class ApiAuthController extends HttpServlet {
             if (!ApiUtil.isBlank(ngaySinhStr)) {
                 user.setNgaySinh(java.sql.Date.valueOf(LocalDate.parse(ngaySinhStr)));
             }
-            if (!ApiUtil.isBlank(gioiTinhStr)) {
-                user.setGioiTinh(Boolean.parseBoolean(gioiTinhStr));
-            }
+            user.setGioiTinh(parseGender(gioiTinhStr));
 
             userService.save(user);
             ApiUtil.created(response, userToMap(user));
@@ -187,14 +199,31 @@ public class ApiAuthController extends HttpServlet {
         return String.format("U%02d", newIdNum);
     }
 
-    private Map<String, Object> userToMap(User user) {
+    public static Map<String, Object> userToMap(User user) {
         Map<String, Object> data = new HashMap<String, Object>();
         data.put("id", user.getId());
         data.put("hoTen", user.getHoTen());
         data.put("email", user.getEmail());
         data.put("sdt", user.getSdt());
+        data.put("CCCD", user.getCCCD());
+        data.put("gioiTinh", user.getGioiTinh());
         data.put("vaiTro", user.getVaiTro());
+
+        if (user.getNgaySinh() != null) {
+            data.put("ngaySinh", new SimpleDateFormat("yyyy-MM-dd").format(user.getNgaySinh()));
+        } else {
+            data.put("ngaySinh", null);
+        }
+
         return data;
+    }
+
+    public static Boolean parseGender(String value) {
+        if (ApiUtil.isBlank(value)) return null;
+        String v = value.trim().toLowerCase();
+        if ("true".equals(v) || "1".equals(v) || "male".equals(v) || "nam".equals(v)) return Boolean.TRUE;
+        if ("false".equals(v) || "0".equals(v) || "female".equals(v) || "nu".equals(v) || "nữ".equals(v)) return Boolean.FALSE;
+        return null;
     }
 
     private String firstNotBlank(String a, String b) {
