@@ -260,6 +260,84 @@ window.selectTrain = function selectTrain(chuyenTauId) {
   window.location.href = `tickets.html?chuyenTauId=${encodeURIComponent(chuyenTauId)}`;
 };
 
+function ttGetCoachTabs() {
+  let tabsWrap = document.getElementById("coach-tabs");
+  if (tabsWrap) return tabsWrap;
+
+  const seatGrid = document.querySelector(".seat-grid-container");
+  const legend = seatGrid?.previousElementSibling;
+  const card = seatGrid?.closest(".p-4.bg-white, .p-4");
+  if (!card) return null;
+
+  tabsWrap = document.createElement("div");
+  tabsWrap.id = "coach-tabs";
+  tabsWrap.className = "d-flex gap-2 mb-4 overflow-x-auto pb-1";
+
+  if (legend && legend.parentElement === card) {
+    card.insertBefore(tabsWrap, legend);
+  } else if (seatGrid && seatGrid.parentElement === card) {
+    card.insertBefore(tabsWrap, seatGrid);
+  } else {
+    card.appendChild(tabsWrap);
+  }
+  return tabsWrap;
+}
+
+function ttRenderCoachTabs(coaches, activeCoach) {
+  const tabsWrap = ttGetCoachTabs();
+  if (!tabsWrap || !Array.isArray(coaches) || coaches.length === 0) return;
+
+  const normalizedCoaches = [...new Set(coaches.map(c => String(c)))].sort((a, b) => Number(a) - Number(b));
+  window.__ttCoaches = normalizedCoaches;
+  const active = String(activeCoach || window.__ttCurrentCoach || normalizedCoaches[0]);
+  window.__ttCurrentCoach = active;
+
+  tabsWrap.innerHTML = normalizedCoaches
+    .map(c => `<button type="button" class="btn-coach-tab ${String(c) === active ? "active" : ""}" data-coach="${c}">Toa ${c}</button>`)
+    .join("");
+
+  tabsWrap.querySelectorAll(".btn-coach-tab").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const coach = btn.dataset.coach;
+      localStorage.removeItem("selectedSeatIds");
+      localStorage.removeItem("selectedSeats");
+      localStorage.removeItem("selectedSeatPrices");
+      ttRenderCoachTabs(window.__ttCoaches || normalizedCoaches, coach);
+      ttRenderSeatsForCoach(coach);
+    });
+  });
+}
+
+function ttEnsureCoachTabs() {
+  const coaches = window.__ttCoaches || [];
+  const tabsWrap = ttGetCoachTabs();
+  if (!tabsWrap || coaches.length === 0) return;
+
+  const buttons = tabsWrap.querySelectorAll(".btn-coach-tab");
+  const hasWrongText = tabsWrap.textContent.trim() === "Chưa chọn ghế";
+  if (hasWrongText || buttons.length !== coaches.length) {
+    ttRenderCoachTabs(coaches, window.__ttCurrentCoach || coaches[0]);
+  }
+}
+
+function ttWatchCoachTabs() {
+  const tabsWrap = ttGetCoachTabs();
+  if (!tabsWrap || tabsWrap.dataset.watched === "true") return;
+  tabsWrap.dataset.watched = "true";
+
+  const observer = new MutationObserver(() => {
+    const coaches = window.__ttCoaches || [];
+    if (!coaches.length) return;
+    const buttons = tabsWrap.querySelectorAll(".btn-coach-tab");
+    const hasWrongText = tabsWrap.textContent.trim() === "Chưa chọn ghế";
+    if (hasWrongText || buttons.length !== coaches.length) {
+      ttRenderCoachTabs(coaches, window.__ttCurrentCoach || coaches[0]);
+    }
+  });
+
+  observer.observe(tabsWrap, { childList: true, subtree: true, characterData: true });
+}
+
 async function ttInitTicketsPage() {
   const seatGrid = document.querySelector(".seat-grid-container");
   if (!seatGrid) return;
@@ -267,6 +345,11 @@ async function ttInitTicketsPage() {
   const tripId = params.get("chuyenTauId") || localStorage.getItem("chuyenTauId");
   const trip = JSON.parse(localStorage.getItem("selectedTrip") || "{}");
   if (!tripId) return;
+
+  localStorage.removeItem("selectedSeatIds");
+  localStorage.removeItem("selectedSeats");
+  localStorage.removeItem("selectedSeatPrices");
+  localStorage.removeItem("selectedTicketTotal");
 
   document.getElementById("display-route") && (document.getElementById("display-route").innerText = `${trip.tenTau || trip.idTau || tripId} - ${trip.gaDi || ""} ➜ ${trip.gaDen || ""}`);
   document.getElementById("display-date") && (document.getElementById("display-date").innerText = `${ttDate(trip.ngayGioKhoiHanh)} • ${ttTime(trip.ngayGioKhoiHanh)}`);
@@ -276,25 +359,20 @@ async function ttInitTicketsPage() {
 
   try {
     const seats = await ttApi(`/seats?chuyenTauId=${encodeURIComponent(tripId)}`);
-    window.__ttSeats = seats || [];
+    window.__ttSeats = (seats || []).sort((a, b) => {
+      return Number(a.soToa) - Number(b.soToa)
+          || Number(a.viTriGhe) - Number(b.viTriGhe);
+    });
     const coaches = [...new Set(window.__ttSeats.map(s => String(s.soToa)))].sort((a, b) => Number(a) - Number(b));
-    const tabsWrap = document.querySelector(".btn-coach-tab")?.parentElement;
-    if (tabsWrap) {
-      tabsWrap.innerHTML = coaches.map((c, i) => `<button class="btn-coach-tab ${i === 0 ? "active" : ""}" data-coach="${c}">Toa ${c}</button>`).join("");
-      tabsWrap.querySelectorAll(".btn-coach-tab").forEach(btn => {
-        btn.addEventListener("click", () => {
-          tabsWrap.querySelectorAll(".btn-coach-tab").forEach(b => b.classList.remove("active"));
-          btn.classList.add("active");
-          ttRenderSeatsForCoach(btn.dataset.coach);
-        });
-      });
-    }
+    window.__ttCoaches = coaches;
+    ttRenderCoachTabs(coaches, coaches[0]);
+    ttWatchCoachTabs();
     ttRenderSeatsForCoach(coaches[0]);
   } catch (e) {
     seatGrid.innerHTML = `<div class="text-center text-danger p-4">${e.message}</div>`;
   }
 
-  const continueBtn = document.querySelector("button.btn.btn-warning");
+  const continueBtn = document.getElementById("continue-seat-btn");
   if (continueBtn) {
     continueBtn.onclick = null;
     continueBtn.removeAttribute("onclick");
@@ -304,7 +382,10 @@ async function ttInitTicketsPage() {
         ttToast("Vui lòng chọn ít nhất một ghế", "error");
         return;
       }
-      window.location.href = "information.html";
+      ttToast("Đặt chỗ thành công! Đang chuyển sang cổng thanh toán...", "success");
+      setTimeout(() => {
+        window.location.href = "information.html";
+      }, 600);
     });
   }
 }
@@ -312,6 +393,11 @@ async function ttInitTicketsPage() {
 function ttRenderSeatsForCoach(coach) {
   const seatGrid = document.querySelector(".seat-grid-container");
   if (!seatGrid || !coach) return;
+  window.__ttCurrentCoach = String(coach);
+  ttEnsureCoachTabs();
+  ttWatchCoachTabs();
+  const summaryCoach = document.getElementById("summary-coach");
+  if (summaryCoach) summaryCoach.innerText = `Toa ${coach}`;
   const seats = (window.__ttSeats || []).filter(s => String(s.soToa) === String(coach));
   const selectedIds = new Set(JSON.parse(localStorage.getItem("selectedSeatIds") || "[]"));
   const rows = [];
@@ -357,10 +443,13 @@ function ttUpdateSeatSummary() {
   localStorage.setItem("selectedSeatCount", String(ids.length));
   localStorage.setItem("selectedTicketTotal", String(total));
 
-  const badgeBox = document.querySelector(".badge-seat-tag")?.parentElement || document.querySelector(".mb-4 .d-flex.gap-2");
+  const badgeBox = document.getElementById("selected-seat-box");
   if (badgeBox) {
-    badgeBox.innerHTML = labels.length ? labels.map(l => `<span class="badge-seat-tag">${l}</span>`).join("") : `<span class="text-muted small">Chưa chọn ghế</span>`;
+    badgeBox.innerHTML = labels.length
+      ? labels.map(l => `<span class="badge-seat-tag">${l}</span>`).join("")
+      : `<span class="text-muted small">Chưa chọn ghế</span>`;
   }
+  ttEnsureCoachTabs();
   const strongs = document.querySelectorAll(".d-flex.justify-content-between.mb-2.small strong");
   strongs.forEach(s => s.innerText = String(ids.length));
   const priceEl = document.querySelector(".d-flex.justify-content-between.mb-3.small strong");

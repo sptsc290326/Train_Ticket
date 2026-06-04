@@ -7,14 +7,14 @@
 const BASE_URL = "http://localhost:8080/api";
 
 // DỮ LIỆU MẪU BAN ĐẦU (Dùng khi Backend chưa sẵn sàng)
-const MOCK_USER_DATA = {
-  fullName: "Nguyễn Văn A (Demo)",
-  email: "nguyenvana@email.com",
-  phone: "0901234567",
-  gender: "male",
-  dob: "1995-06-15",
-  address: "123 Đường ABC, Quận 1, TP.HCM",
-};
+//const MOCK_USER_DATA = {
+//  fullName: "Nguyễn Văn A (Demo)",
+//  email: "nguyenvana@email.com",
+//  phone: "0901234567",
+//  gender: "male",
+//  dob: "1995-06-15",
+//  address: "123 Đường ABC, Quận 1, TP.HCM",
+//};
 
 // 1. HÀM FETCH GỌI API TRUNG GIAN (Có xử lý Token chứng thực)
 async function fetchApi(endpoint, method = "GET", body = null) {
@@ -48,21 +48,32 @@ document.addEventListener("DOMContentLoaded", () => {
 // Hàm gọi tải hồ sơ người dùng
 async function loadUserProfile() {
   try {
-    // 1. Cố gắng gọi API lấy dữ liệu thực tế từ cơ sở dữ liệu
-    const userData = await fetchApi("/users/profile", "GET");
-    fillProfileUI(userData);
-  } catch (error) {
-    console.warn(
-      "Backend chưa chạy hoặc không phản hồi. Đang chuyển sang dữ liệu cục bộ...",
-    );
+    const currentUser = JSON.parse(localStorage.getItem("currentUser") || "null");
 
-    // 2. Chế độ Offline: Ưu tiên đọc dữ liệu người dùng đã sửa trong localStorage trước
-    const localUser = localStorage.getItem("G7_User_Profile");
-    if (localUser) {
-      fillProfileUI(JSON.parse(localUser));
-    } else {
-      fillProfileUI(MOCK_USER_DATA); // Nếu chưa từng sửa, load đúng Mock gốc ban đầu
+    if (currentUser) {
+      fillProfileUI({
+        fullName: currentUser.hoTen || currentUser.fullName || "",
+        email: currentUser.email || "",
+        phone: currentUser.sdt || currentUser.phone || "",
+        gender: currentUser.gioiTinh === true ? "male" : currentUser.gioiTinh === false ? "female" : "",
+        dob: currentUser.ngaySinh || "",
+        address: currentUser.address || "",
+      });
+      return;
     }
+
+    const userData = await fetchApi("/auth/me", "GET");
+    fillProfileUI({
+      fullName: userData.hoTen || "",
+      email: userData.email || "",
+      phone: userData.sdt || "",
+      gender: userData.gioiTinh === true ? "male" : userData.gioiTinh === false ? "female" : "",
+      dob: userData.ngaySinh || "",
+      address: userData.address || "",
+    });
+  } catch (error) {
+    console.warn("Chưa đăng nhập hoặc không lấy được thông tin user", error);
+    window.location.href = "login.html";
   }
 }
 

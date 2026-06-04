@@ -95,7 +95,7 @@ public class TripService {
                          "JOIN GheNgoi g ON gc.idGhe = g.id " +
                          "JOIN ToaTau t ON g.idToa = t.id " +
                          "WHERE gc.idChuyenTau = :chuyenTauId " +
-                         "ORDER BY t.soToa, g.viTriGhe";
+                         "ORDER BY t.soToa, CAST(g.viTriGhe AS UNSIGNED)";
 
             Query query = em.createNativeQuery(sql);
             query.setParameter("chuyenTauId", chuyenTauId);
