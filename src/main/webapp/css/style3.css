@@ -165,11 +165,16 @@
     user-select: none;
 }
 
-.seat-box:hover:not(.occupied) {
+.seat-box:hover:not(.occupied):not(.selected) {
     background-color: #f8fafc;
     border-color: #94a3b8;
 }
-
+.seat-box.selected:hover {
+    background-color: #e5a400;
+    color: #ffffff;
+    border-color: #d99a00;
+    box-shadow: 0 4px 10px rgba(244, 183, 26, 0.45);
+}
 .seat-box.occupied {
     background-color: #e2e8f0;
     color: #94a3b8;

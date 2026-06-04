@@ -99,48 +99,7 @@ document.addEventListener("DOMContentLoaded", () => {
       height: 150,
     });
   }
-  const payNowBtn = document.getElementById("payNowBtn");
-
-  if (payNowBtn) {
-    payNowBtn.addEventListener("click", () => {
-      const selectedSeats =
-        JSON.parse(localStorage.getItem("selectedSeats")) || [];
-
-      const ticketTotal =
-        Number(localStorage.getItem("selectedTicketTotal")) || 2400000;
-
-      const finalTotal =
-        Number(localStorage.getItem("finalTotal")) || ticketTotal + 20000;
-
-      const promoCode = localStorage.getItem("promoCode") || "";
-
-      const paidTicket = {
-        ticketCode: "TK" + Date.now(),
-
-        train: localStorage.getItem("selectedTrain") || "SE1",
-
-        route: localStorage.getItem("selectedRoute") || "Sài Gòn → Hà Nội",
-
-        date: localStorage.getItem("selectedDate") || "15/05/2026 - 06:00",
-
-        seats: selectedSeats,
-
-        ticketTotal: ticketTotal,
-
-        serviceFee: 20000,
-
-        finalTotal: finalTotal,
-
-        promoCode: promoCode,
-
-        status: "Đã thanh toán",
-      };
-      localStorage.setItem("paidTicket", JSON.stringify(paidTicket));
-
-      alert("Thanh toán thành công!");
-      window.location.href = "ticket-detail.html";
-    });
-  }
+  
   const timerText = document.querySelector(".timer b");
 
   if (timerText) {
@@ -488,23 +447,6 @@ if (backBtn) {
   });
 }
 
-let selectedSeats = [];
-
-document.querySelectorAll(".seat-box").forEach((seat) => {
-  seat.addEventListener("click", () => {
-    seat.classList.toggle("selected");
-
-    const seatNumber = seat.textContent.trim();
-
-    if (selectedSeats.includes(seatNumber)) {
-      selectedSeats = selectedSeats.filter((item) => item !== seatNumber);
-    } else {
-      selectedSeats.push(seatNumber);
-    }
-
-    localStorage.setItem("selectedSeats", JSON.stringify(selectedSeats));
-  });
-});
 
 const seats = JSON.parse(localStorage.getItem("selectedSeats")) || [];
 
