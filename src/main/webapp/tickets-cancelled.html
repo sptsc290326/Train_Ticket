@@ -55,40 +55,14 @@
         >
         <h1 class="page-title">Vé của tôi</h1>
         <div class="ticket-tabs">
-          <a class="" href="tickets-upcoming.html">Sắp đi (1)</a>
-          <a class="" href="tickets-pending.html">Chờ thanh toán (1)</a>
-          <a class="active" href="tickets-cancelled.html">Đã hủy (1)</a>
-          <a class="" href="tickets-completed.html">Đã hoàn thành (1)</a>
+         	<a href="tickets-upcoming.html">Sắp đi <span id="upcomingCount">(0)</span></a>
+			<a href="tickets-pending.html">Chờ thanh toán <span id="pendingCount">(0)</span></a>
+			<a class="active" href="tickets-cancelled.html">Đã hủy <span id="cancelledCount">(0)</span></a>
+			<a href="tickets-completed.html">Đã hoàn thành <span id="completedCount">(0)</span></a>
         </div>
-        <section class="ticket-card panel">
-          <div class="ticket-main">
-            <div class="ticket-col code-col">
-              <div class="ticket-label icon-label">
-                <i class="bi bi-ticket-perforated"></i><span>Mã vé</span>
-              </div>
-              <h3>TK003</h3>
-              <span class="mini-label">Chuyến tàu</span><strong>SE5</strong>
-              <span class="mini-label date-label">Ngày giờ</span>
-              <p><i class="bi bi-calendar3"></i>10/05/2026 - 14:00</p>
-            </div>
-            <div class="ticket-col route-col">
-              <span class="mini-label">Tuyến</span>
-              <p><i class="bi bi-geo-alt-fill"></i>Sài Gòn → Nha Trang</p>
-              <span class="mini-label seat-title">Ghế</span>
-              <div class="seat-list"><em>C3-15</em></div>
-            </div>
-            <div class="ticket-actions">
-              <span class="ticket-status red">Đã hủy</span>
-              <div class="ticket-button-group">
-                <a class="outline-btn" href="ticket-detail.html"
-                  ><i class="bi bi-download"></i>Xem chi tiết</a
-                >
-              </div>
-            </div>
-          </div>
-          <div class="ticket-line"></div>
-          <div class="ticket-price">450.000đ</div>
-        </section>
+      	<div id="ticketListContainer">
+    		<div class="text-center p-5">Đang tải dữ liệu...</div>
+		</div>  
       </div>
     </main>
     <footer class="site-footer">

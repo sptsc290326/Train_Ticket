@@ -16,12 +16,14 @@ import javax.servlet.http.HttpServletResponse;
 import model.ChiTietVe;
 import model.Ve;
 import service.TicketService;
+import service.TrainTickService;
 import util.HibernateUtil;
 
-@WebServlet(urlPatterns = { "/api/tickets", "/api/tickets/detail" })
+@WebServlet(urlPatterns = { "/api/tickets", "/api/tickets/detail", "/api/tickets/cancel" })
 public class ApiTicketController extends HttpServlet {
     private static final long serialVersionUID = 1L;
     private final TicketService ticketService = new TicketService();
+    private final TrainTickService trainTickService = new TrainTickService();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -33,6 +35,19 @@ public class ApiTicketController extends HttpServlet {
             list(request, response);
         } else if ("/api/tickets/detail".equals(path)) {
             detail(request, response);
+        } else {
+            ApiUtil.notFound(response, "API khong ton tai");
+        }
+    }
+    
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        request.setCharacterEncoding("UTF-8");
+        String path = request.getServletPath();
+
+        if ("/api/tickets/cancel".equals(path)) {
+            cancelTicket(request, response);
         } else {
             ApiUtil.notFound(response, "API khong ton tai");
         }
@@ -75,9 +90,15 @@ public class ApiTicketController extends HttpServlet {
             sql.append("LEFT JOIN `DanhGia` dg ON dg.idVe = v.ID ");
             sql.append("WHERE v.idNguoiDat = ? ");
 
-            boolean completed = "completed".equalsIgnoreCase(statusGroup) || "HOAN_THANH".equalsIgnoreCase(status);
-            if (completed) {
-                sql.append("AND UPPER(v.trangThaiVe) IN ('HOAN_THANH','DA_HOAN_THANH','HOAN_TAT','DA_SU_DUNG') ");
+            if ("upcoming".equalsIgnoreCase(statusGroup)) {
+                sql.append("AND UPPER(v.trangThaiVe) = 'DA_THANH_TOAN' ");
+                sql.append("AND ct.ngayGioKhoiHanh > NOW() ");
+            } else if ("pending".equalsIgnoreCase(statusGroup)) {
+                sql.append("AND UPPER(v.trangThaiVe) = 'CHO_THANH_TOAN' ");
+            } else if ("cancelled".equalsIgnoreCase(statusGroup)) {
+                sql.append("AND UPPER(v.trangThaiVe) = 'DA_HUY' ");
+            } else if ("completed".equalsIgnoreCase(statusGroup)) {
+                sql.append("AND UPPER(v.trangThaiVe) = 'HOAN_THANH' ");
             } else if (!ApiUtil.isBlank(status)) {
                 sql.append("AND UPPER(v.trangThaiVe) = UPPER(?) ");
             }
@@ -88,7 +109,7 @@ public class ApiTicketController extends HttpServlet {
 
             javax.persistence.Query query = em.createNativeQuery(sql.toString());
             query.setParameter(1, userId.trim());
-            if (!completed && !ApiUtil.isBlank(status)) {
+            if (ApiUtil.isBlank(statusGroup) && !ApiUtil.isBlank(status)) {
                 query.setParameter(2, status.trim());
             }
 
@@ -127,6 +148,43 @@ public class ApiTicketController extends HttpServlet {
         } finally {
             em.close();
         }
+    }
+    private void cancelTicket(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        String ticketId = request.getParameter("ticketId");
+
+        if (ApiUtil.isBlank(ticketId)) {
+            ticketId = request.getParameter("idVe");
+        }
+
+        if (ApiUtil.isBlank(ticketId)) {
+            try {
+                com.google.gson.JsonObject json = ApiUtil.readJson(request);
+                ticketId = ApiUtil.getString(json, "ticketId");
+
+                if (ApiUtil.isBlank(ticketId)) {
+                    ticketId = ApiUtil.getString(json, "idVe");
+                }
+            } catch (Exception e) {
+            }
+        }
+
+        if (ApiUtil.isBlank(ticketId)) {
+            ApiUtil.badRequest(response, "Thieu ma ve");
+            return;
+        }
+
+        boolean success = trainTickService.cancelTicket(ticketId);
+
+        if (!success) {
+            ApiUtil.badRequest(response, "Huy ve that bai. Kiem tra ma ve hoac trang thai ve.");
+            return;
+        }
+
+        Map<String, Object> data = new HashMap<String, Object>();
+        data.put("ticketId", ticketId);
+        data.put("message", "Huy ve thanh cong");
+
+        ApiUtil.ok(response, data);
     }
 
     private void detail(HttpServletRequest request, HttpServletResponse response) throws IOException {

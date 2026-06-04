@@ -553,7 +553,191 @@ function ttInitPaymentPage() {
     }
   });
 }
+function ttGetCurrentUserIdForTickets() {
+  const user = ttCurrentUser();
+  return user && user.id ? user.id : "U02";
+}
 
+function ttDetectTicketStatusGroup() {
+  const page = location.pathname.split("/").pop();
+
+  if (page === "tickets-upcoming.html") return "upcoming";
+  if (page === "tickets-pending.html") return "pending";
+  if (page === "tickets-cancelled.html") return "cancelled";
+
+  return "";
+}
+
+async function ttInitMyTicketsPage() {
+  const container = document.getElementById("ticketListContainer");
+  const statusGroup = ttDetectTicketStatusGroup();
+
+  if (!container || !statusGroup) return;
+
+  const userId = ttGetCurrentUserIdForTickets();
+
+  container.innerHTML = `<div class="text-center p-5">Đang tải dữ liệu...</div>`;
+
+  try {
+    await ttLoadTicketCounts(userId);
+
+    const tickets = await ttApi(
+      `/tickets?userId=${encodeURIComponent(userId)}&statusGroup=${encodeURIComponent(statusGroup)}`
+    );
+
+    if (!tickets || tickets.length === 0) {
+      container.innerHTML = `
+        <section class="ticket-card panel">
+          <div class="text-muted p-4">Không có vé trong mục này.</div>
+        </section>
+      `;
+      return;
+    }
+
+    container.innerHTML = tickets.map(t => ttRenderMyTicketCard(t, statusGroup)).join("");
+  } catch (e) {
+    container.innerHTML = `
+      <section class="ticket-card panel">
+        <div class="alert alert-danger m-4">${ttEscapeHtml(e.message)}</div>
+      </section>
+    `;
+  }
+}
+
+async function ttLoadTicketCounts(userId) {
+  const groups = ["upcoming", "pending", "cancelled", "completed"];
+
+  const results = await Promise.allSettled(
+    groups.map(g =>
+      ttApi(`/tickets?userId=${encodeURIComponent(userId)}&statusGroup=${g}`)
+    )
+  );
+
+  groups.forEach((g, i) => {
+    const el = document.getElementById(`${g}Count`);
+    if (!el) return;
+
+    const list = results[i].status === "fulfilled" ? results[i].value || [] : [];
+    el.innerText = `(${list.length})`;
+  });
+}
+
+function ttRenderMyTicketCard(ticket, statusGroup) {
+  const id = ttEscapeHtml(ticket.id || ticket.idVe || "");
+  const tenTau = ttEscapeHtml(ticket.tenTau || ticket.idChuyenTau || "Chưa rõ");
+  const gaDi = ttEscapeHtml(ticket.gaDi || "Ga đi");
+  const gaDen = ttEscapeHtml(ticket.gaDen || "Ga đến");
+  const ghe = ttEscapeHtml(ticket.ghe || ticket.viTriGhe || "Chưa rõ");
+  const ngayGio = ttFormatTicketDateTime(ticket.ngayGioKhoiHanh || ticket.ngayDat);
+  const price = ttMoney(ticket.tongTien);
+
+  let statusText = "Sắp đi";
+  let statusClass = "green";
+  let actionButtons = `
+    <a class="outline-btn" href="ticket-detail.html?idVe=${encodeURIComponent(id)}">
+      <i class="bi bi-download"></i>Xem chi tiết
+    </a>
+    <button class="primary-btn" type="button" onclick="ttCancelTicket('${id}')">
+      Hủy vé
+    </button>
+  `;
+
+  if (statusGroup === "pending") {
+    statusText = "Chờ thanh toán";
+    statusClass = "orange";
+    actionButtons = `
+      <a class="primary-btn" href="payment.html?ticketId=${encodeURIComponent(id)}">
+        Thanh toán ngay
+      </a>
+      <button class="outline-btn" type="button" onclick="ttCancelTicket('${id}')">
+        Hủy vé
+      </button>
+    `;
+  }
+
+  if (statusGroup === "cancelled") {
+    statusText = "Đã hủy";
+    statusClass = "red";
+    actionButtons = `
+      <a class="outline-btn" href="ticket-detail.html?idVe=${encodeURIComponent(id)}">
+        <i class="bi bi-download"></i>Xem chi tiết
+      </a>
+    `;
+  }
+
+  return `
+    <section class="ticket-card panel">
+      <div class="ticket-main">
+        <div class="ticket-col code-col">
+          <div class="ticket-label icon-label">
+            <i class="bi bi-ticket-perforated"></i><span>Mã vé</span>
+          </div>
+          <h3>${id}</h3>
+          <span class="mini-label">Chuyến tàu</span><strong>${tenTau}</strong>
+          <span class="mini-label date-label">Ngày giờ</span>
+          <p><i class="bi bi-calendar3"></i>${ngayGio}</p>
+        </div>
+
+        <div class="ticket-col route-col">
+          <span class="mini-label">Tuyến</span>
+          <p><i class="bi bi-geo-alt-fill"></i>${gaDi} → ${gaDen}</p>
+          <span class="mini-label seat-title">Ghế</span>
+          <div class="seat-list"><em>${ghe}</em></div>
+        </div>
+
+        <div class="ticket-actions">
+          <span class="ticket-status ${statusClass}">${statusText}</span>
+          <div class="ticket-button-group">
+            ${actionButtons}
+          </div>
+        </div>
+      </div>
+
+      <div class="ticket-line"></div>
+      <div class="ticket-price">${price}</div>
+    </section>
+  `;
+}
+
+async function ttCancelTicket(ticketId) {
+  if (!ticketId) return;
+
+  if (!confirm("Bạn chắc chắn muốn hủy vé này?")) return;
+
+  try {
+    await ttApi("/tickets/cancel", {
+      method: "POST",
+      body: JSON.stringify({ ticketId })
+    });
+
+    alert("Hủy vé thành công");
+    ttInitMyTicketsPage();
+  } catch (e) {
+    alert(e.message);
+  }
+}
+
+function ttFormatTicketDateTime(value) {
+  if (!value) return "Chưa rõ";
+
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return ttEscapeHtml(String(value));
+
+  return (
+    d.toLocaleDateString("vi-VN") +
+    " - " +
+    d.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })
+  );
+}
+
+function ttEscapeHtml(value) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
 document.addEventListener("DOMContentLoaded", () => {
   ttLoadStations();
   const searchBtn = document.getElementById("searchTrainBtn");
@@ -564,4 +748,5 @@ document.addEventListener("DOMContentLoaded", () => {
   ttInitTicketsPage();
   ttInitInformationPage();
   ttInitPaymentPage();
+  ttInitMyTicketsPage();
 });

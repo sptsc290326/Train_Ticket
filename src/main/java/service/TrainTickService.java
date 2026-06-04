@@ -70,7 +70,8 @@ public class TrainTickService {
                 return false;
             }
 
-            if (!"CHO_THANH_TOAN".equals(ve.getTrangThaiVe())) {
+            if (!"CHO_THANH_TOAN".equals(ve.getTrangThaiVe()) 
+                    && !"DA_THANH_TOAN".equals(ve.getTrangThaiVe())) {
                 tx.rollback();
                 return false;
             }

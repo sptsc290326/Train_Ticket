@@ -34,16 +34,16 @@
         <h1 class="page-title">Vé của tôi</h1>
 
         <div class="ticket-tabs">
-          <a href="tickets-upcoming.html">Sắp đi</a>
-          <a href="tickets-pending.html">Chờ thanh toán</a>
-          <a href="tickets-cancelled.html">Đã hủy</a>
-          <a class="active" href="tickets-completed.html">Đã hoàn thành <span id="completedCount"></span></a>
+          	<a href="tickets-upcoming.html">Sắp đi <span id="upcomingCount">(0)</span></a>
+			<a href="tickets-pending.html">Chờ thanh toán <span id="pendingCount">(0)</span></a>
+			<a href="tickets-cancelled.html">Đã hủy <span id="cancelledCount">(0)</span></a>
+			<a class="active" href="tickets-completed.html">Đã hoàn thành <span id="completedCount">(0)</span></a>
         </div>
 
         <div id="completedTicketList">
-          <section class="ticket-card panel">
-            <div class="text-muted p-4">Đang tải vé đã hoàn thành từ database...</div>
-          </section>
+          <div id="ticketListContainer">
+    		<div class="text-center p-5">Đang tải dữ liệu...</div>
+		</div>  
         </div>
       </div>
     </main>
