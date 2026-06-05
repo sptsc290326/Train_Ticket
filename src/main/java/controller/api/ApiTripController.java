@@ -33,7 +33,7 @@ public class ApiTripController extends HttpServlet {
         request.setCharacterEncoding("UTF-8");
         String path = request.getServletPath();
 
-        try {
+        try { 
             if ("/api/stations".equals(path)) {
                 stations(response);
             } else if ("/api/trips".equals(path)) {

@@ -51,7 +51,7 @@ function searchTrains() {
     showToast("Vui lòng nhập ga đến", "error");
     return;
   }
-  
+   
   if (from === to) {
     showToast("Ga đi và ga đến không được giống nhau", "error");
     return;

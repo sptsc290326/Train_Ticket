@@ -972,7 +972,7 @@ function updatePaymentUI(labels, ticket, amount, trip, ticketId) {
   }
   
   const summaryTrain = document.getElementById("summaryTrain");
-  const summaryRoute = document.getElementById("summaryRoute");
+  const summaryRoute = document.getElementById("summaryRoute"); 
   const summaryDateTime = document.getElementById("summaryDateTime");
   
   if (summaryTrain && trip.tenTau) {

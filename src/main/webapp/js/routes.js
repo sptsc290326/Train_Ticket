@@ -162,7 +162,7 @@ function renderTripCard(trip) {
   const gaDi = trip.gaDi || "Ga đi";
   const gaDen = trip.gaDen || "Ga đến";
   
-  let priceValue = 0;
+  let priceValue = 0; 
   if (trip.giaThapNhat) {
     priceValue = Number(trip.giaThapNhat);
   } else if (trip.giaTu) {
