@@ -38,9 +38,32 @@ function switchTab(tab) {
 
 // 3. XỬ LÝ NÚT "TÌM KIẾM CHUYẾN TÀU"
 function searchTrains() {
+  const from = document.getElementById("fromStation")?.value.trim() || "";
+  const to = document.getElementById("toStation")?.value.trim() || "";
+  const date = document.getElementById("departDate")?.value || "";
+  
+  if (from === "") {
+    showToast("Vui lòng nhập ga đi", "error");
+    return;
+  }
+  
+  if (to === "") {
+    showToast("Vui lòng nhập ga đến", "error");
+    return;
+  }
+  
+  if (from === to) {
+    showToast("Ga đi và ga đến không được giống nhau", "error");
+    return;
+  }
+  
+  if (date === "") {
+    showToast("Vui lòng chọn ngày khởi hành", "error");
+    return;
+  }
+  
   window.location.href = "routes.html";
 }
-
 // 4. XỬ LÝ NÚT "XEM CHUYẾN" (KHU VỰC TUYẾN TÀU PHỔ BIẾN)
 function viewRoute(from, to) {
   const today = new Date().toISOString().split("T")[0];

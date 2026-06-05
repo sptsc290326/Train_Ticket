@@ -55,13 +55,13 @@
             <section class="panel hold-card">
               <div>
                 <p>Mã giữ chỗ</p>
-                <h1>TKDCG3NO</h1>
+                <h1 id="holdCode">Đang tạo...</h1>
                 <span
                   >Vui lòng hoàn tất thanh toán trước khi hết thời gian giữ
                   chỗ</span
                 >
               </div>
-              <div class="timer"><i class="bi bi-clock"></i><b></b></div>
+              <div class="timer"><i class="bi bi-clock"></i><b id="countdownTimer">09:59</b></div>
             </section>
 
             <section class="panel payment-card">
@@ -116,13 +116,13 @@
             <aside class="summary payment-summary">
               <h2>Chi tiết thanh toán</h2>
               <div class="summary-block">
-                <span>Chuyến tàu</span><strong>SE1</strong>
+                <span>Chuyến tàu</span><strong id="summaryTrain">SE1</strong>
               </div>
               <div class="summary-block">
-                <span>Tuyến</span><strong>Sài Gòn → Hà Nội</strong>
+                <span>Tuyến</span><strong id="summaryRoute">Sài Gòn → Hà Nội</strong>
               </div>
               <div class="summary-block">
-                <span>Ngày giờ</span><strong>15/05/2026 - 06:00</strong>
+                <span>Ngày giờ</span><strong id="summaryDateTime">15/05/2026 - 06:00</strong>
               </div>
               <div class="summary-block seat-block">
                 <span>Ghế</span>
@@ -134,12 +134,12 @@
                 ><b id="paymentTicketPrice">2.400.000đ</b>
               </div>
               <div class="price-line">
-                <span>Phí dịch vụ</span><b id="serviceFee">20.000đ</b>
+                <span>Phí dịch vụ</span><b id="serviceFee">0đ</b>
               </div>
               <div class="divider small-gap"></div>
               <div class="total">
                 <span>Tổng thanh toán</span
-                ><strong id="finalTotal">2.420.000đ</strong>
+                ><strong id="finalTotal">2.400.000đ</strong>
               </div>
               <button type="button" id="payNowBtn" class="pay-btn">
                 Thanh toán ngay
@@ -188,6 +188,8 @@
         <p class="copyright">© 2026 G7 TrainTick. Tất cả quyền được bảo lưu.</p>
       </div>
     </footer>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/api-front.js"></script>
     <script>
       document.querySelectorAll(".payment-option").forEach(function (item) {
         item.addEventListener("click", function () {
@@ -198,8 +200,162 @@
           item.querySelector("input").checked = true;
         });
       });
+      
+      function generateHoldCode() {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        let code = '';
+        for (let i = 0; i < 8; i++) {
+          code += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return code;
+      }
+      
+      function ttMoney(value) {
+        const n = Number(value || 0);
+        return n.toLocaleString("vi-VN") + "đ";
+      }
+      
+      const urlParams = new URLSearchParams(window.location.search);
+      const ticketIdFromUrl = urlParams.get("ticketId") || urlParams.get("idVe");
+      
+      let idVe = ticketIdFromUrl;
+      let selectedTrip = JSON.parse(localStorage.getItem("selectedTrip") || "{}");
+      let selectedSeats = [];
+      let totalAmount = 0;
+      
+      async function loadTicketDetails() {
+        if (!idVe) return false;
+        
+        try {
+          const ticketDetail = await ttApi(`/tickets/detail?idVe=${encodeURIComponent(idVe)}`);
+          if (ticketDetail) {
+            if (ticketDetail.tenTau) selectedTrip.tenTau = ticketDetail.tenTau;
+            if (ticketDetail.gaDi) selectedTrip.gaDi = ticketDetail.gaDi;
+            if (ticketDetail.gaDen) selectedTrip.gaDen = ticketDetail.gaDen;
+            if (ticketDetail.ngayGioKhoiHanh) selectedTrip.ngayGioKhoiHanh = ticketDetail.ngayGioKhoiHanh;
+            
+            if (ticketDetail.ghe) {
+              selectedSeats = ticketDetail.ghe.split(',');
+            } else if (ticketDetail.chiTietVe && ticketDetail.chiTietVe.length > 0) {
+              selectedSeats = ticketDetail.chiTietVe.map(c => `T${c.soToa}-${c.viTriGhe}`);
+            }
+            
+            totalAmount = Number(ticketDetail.tongTien || 0);
+            
+            localStorage.setItem("selectedSeats", JSON.stringify(selectedSeats));
+            localStorage.setItem("selectedTicketTotal", totalAmount);
+            
+            console.log("Loaded ticket:", idVe, "Seats:", selectedSeats, "Total:", totalAmount);
+            return true;
+          }
+        } catch(e) {
+          console.error("Lỗi lấy chi tiết vé:", e);
+        }
+        return false;
+      }
+      
+      async function displayPaymentInfo() {
+        if (idVe) {
+          await loadTicketDetails();
+        } else {
+          const ticket = JSON.parse(localStorage.getItem("createdTicket") || "{}");
+          idVe = ticket.idVe || localStorage.getItem("idVe") || "VE" + Date.now();
+          selectedTrip = JSON.parse(localStorage.getItem("selectedTrip") || "{}");
+          selectedSeats = JSON.parse(localStorage.getItem("selectedSeats") || "[]");
+          totalAmount = Number(localStorage.getItem("selectedTicketTotal") || 0);
+        }
+        
+        const holdCode = idVe + "-" + generateHoldCode();
+        const holdCodeElement = document.getElementById("holdCode");
+        if (holdCodeElement) {
+          holdCodeElement.innerText = holdCode;
+        }
+        
+        const summaryTrain = document.getElementById("summaryTrain");
+        const summaryRoute = document.getElementById("summaryRoute");
+        const summaryDateTime = document.getElementById("summaryDateTime");
+        
+        if (summaryTrain && selectedTrip.tenTau) {
+          summaryTrain.innerText = selectedTrip.tenTau;
+        }
+        if (summaryRoute && selectedTrip.gaDi && selectedTrip.gaDen) {
+          summaryRoute.innerText = `${selectedTrip.gaDi} → ${selectedTrip.gaDen}`;
+        }
+        if (summaryDateTime && selectedTrip.ngayGioKhoiHanh) {
+          const date = new Date(selectedTrip.ngayGioKhoiHanh);
+          const dateStr = date.toLocaleDateString("vi-VN");
+          const timeStr = date.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" });
+          summaryDateTime.innerText = `${dateStr} - ${timeStr}`;
+        }
+        
+        const paymentSeatsSummary = document.getElementById("paymentSeatsSummary");
+        const paymentTicketPrice = document.getElementById("paymentTicketPrice");
+        const finalTotalEl = document.getElementById("finalTotal");
+        const paymentTicketLabel = document.getElementById("paymentTicketLabel");
+        const seatCount = selectedSeats.length;
+        
+        if (paymentSeatsSummary) {
+          if (selectedSeats.length > 0) {
+            paymentSeatsSummary.innerHTML = selectedSeats.map(s => `<em>${s.trim()}</em>`).join("");
+          } else {
+            paymentSeatsSummary.innerHTML = "<em>Đang cập nhật</em>";
+          }
+        }
+        
+        if (paymentTicketLabel) {
+          paymentTicketLabel.innerText = `Giá vé (${seatCount} vé)`;
+        }
+        
+        const displayTotal = totalAmount > 0 ? totalAmount : Number(localStorage.getItem("selectedTicketTotal") || 0);
+        if (paymentTicketPrice) {
+          paymentTicketPrice.innerText = ttMoney(displayTotal);
+        }
+        if (finalTotalEl) {
+          finalTotalEl.innerText = ttMoney(displayTotal);
+        }
+        
+        let startTime = localStorage.getItem("holdStartTime_" + idVe);
+        let timeLeft = 600;
+        
+        if (startTime) {
+          const elapsed = Math.floor((Date.now() - parseInt(startTime)) / 1000);
+          timeLeft = Math.max(0, 600 - elapsed);
+        }
+        
+        if (!startTime || timeLeft <= 0) {
+          startTime = Date.now().toString();
+          localStorage.setItem("holdStartTime_" + idVe, startTime);
+          timeLeft = 600;
+        }
+        
+        const timerElement = document.getElementById("countdownTimer");
+        
+        if (timerElement) {
+          const initialMinutes = Math.floor(timeLeft / 60);
+          const initialSeconds = timeLeft % 60;
+          timerElement.innerText = `${initialMinutes.toString().padStart(2, '0')}:${initialSeconds.toString().padStart(2, '0')}`;
+          
+          const countdown = setInterval(() => {
+            if (timeLeft <= 0) {
+              clearInterval(countdown);
+              alert("Đã hết thời gian giữ chỗ. Vui lòng đặt vé lại.");
+              localStorage.removeItem("holdStartTime_" + idVe);
+              window.location.href = "routes.html";
+            } else {
+              timeLeft--;
+              const minutes = Math.floor(timeLeft / 60);
+              const seconds = timeLeft % 60;
+              timerElement.innerText = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }
+          }, 1000);
+        }
+      }
+      
+      window.clearHoldTime = function() {
+        localStorage.removeItem("holdStartTime_" + idVe);
+      };
+      
+      displayPaymentInfo();
     </script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-      <script src="js/api-front.js"></script>
   </body>
 </html>

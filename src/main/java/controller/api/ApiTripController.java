@@ -8,6 +8,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.persistence.EntityManager;
+import javax.persistence.Query;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -18,6 +20,7 @@ import model.ChuyenTau;
 import model.GaTau;
 import model.TuyenDuong;
 import service.TripService;
+import util.HibernateUtil;
 
 @WebServlet(urlPatterns = { "/api/stations", "/api/trips", "/api/trips/detail" })
 public class ApiTripController extends HttpServlet {
@@ -91,10 +94,44 @@ public class ApiTripController extends HttpServlet {
         List<Map<String, Object>> data = new ArrayList<Map<String, Object>>();
         if (trips != null) {
             for (ChuyenTau trip : trips) {
-                data.add(tripToMap(trip));
+                Map<String, Object> item = tripToMap(trip);
+                
+                BigDecimal minPrice = getMinPriceForTrip(trip.getId());
+                if (minPrice != null) {
+                    item.put("giaThapNhat", minPrice);
+                }
+                
+                data.add(item);
             }
         }
         ApiUtil.ok(response, data);
+    }
+
+    private BigDecimal getMinPriceForTrip(String chuyenTauId) {
+        EntityManager em = HibernateUtil.getEntityManager();
+        try {
+            String sql = "SELECT MIN(gia) FROM GheChuyen WHERE idChuyenTau = ?";
+            Query query = em.createNativeQuery(sql);
+            query.setParameter(1, chuyenTauId);
+            Object result = query.getSingleResult();
+            
+            if (result == null) return null;
+            if (result instanceof BigDecimal) {
+                return (BigDecimal) result;
+            }
+            if (result instanceof Double) {
+                return BigDecimal.valueOf((Double) result);
+            }
+            if (result instanceof Integer) {
+                return BigDecimal.valueOf((Integer) result);
+            }
+            return new BigDecimal(result.toString());
+        } catch (Exception e) {
+            e.printStackTrace();  
+            return null;
+        } finally {
+            em.close();
+        }
     }
 
     private void tripDetail(HttpServletRequest request, HttpServletResponse response) throws IOException {

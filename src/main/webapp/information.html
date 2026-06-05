@@ -307,5 +307,12 @@
     </footer>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
       <script src="js/api-front.js"></script>
+      <script>
+      const today = new Date().toISOString().split('T')[0];
+      const birthDateInputs = document.querySelectorAll('.birth-date');
+      birthDateInputs.forEach(input => {
+        input.setAttribute('max', today);
+      });
+    </script>
   </body>
 </html>
